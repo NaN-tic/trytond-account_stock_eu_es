@@ -13,27 +13,54 @@ class Invoice(metaclass=PoolMeta):
     @Workflow.transition('posted')
     def post(cls, invoices):
         pool = Pool()
+        InvoiceLine = pool.get('account.invoice.line')
+
+        lines = [l for i in invoices for l in i.lines]
+        InvoiceLine.update_intrastat_move_line_amount(lines)
+
+
+class InvoiceLine(metaclass=PoolMeta):
+    __name__ = 'account.invoice.line'
+
+    @classmethod
+    def update_intrastat_move_line_amount(cls, lines):
+        pool = Pool()
         Move = pool.get('stock.move')
 
         moves = []
-        for invoice in invoices:
-            #invoice_date = invoice.accounting_date or invoice.invoice_date
-            #invoice_date = invoice_date.replace(day=1)
-            for line in invoice.lines:
-                for move in line.stock_moves:
-                    if not move.intrastat_type or not move.intrastat_incoterm:
-                        continue
-                    #move_date = move.effective_date or move.planned_date
-                    #move_date = move_date.replace(day=1)
-                    #if move_date != invoice_date:
-                    #    continue
-                    if move.intrastata_declaration.state != 'opened':
-                        continue
-                    # TODO: By the moment it's a depends to account_invoice_company_currency. But may be will be better to be an extradepends ¿?
-                    if line.company_amount < 0:
-                        move.intrastat_value += line.company_amount
-                    elif line.quantity == move.quantity:
-                        move.intrastat_value = line.company_amount
-                    moves.append(move)
+        for line in lines:
+            # Ensure that cache only take this 'line' an not 1.000
+            # registers. Beacsue in some cases the line may don't have and
+            # ivoice assocaited yet and it's needed for the company_amount
+            # field calculation.
+            line = cls(line)
+            if (not line.invoice
+                    or line.invoice.state not in ('posted', 'paid')):
+                continue
+            invoice_date = (line.invoice.accounting_date
+                or line.invoice.invoice_date)
+            invoice_date = invoice_date.replace(day=1)
+            for move in line.stock_moves:
+                if not move.intrastat_type or not move.intrastat_incoterm:
+                    continue
+                move_date = move.effective_date or move.planned_date
+                move_date = move_date.replace(day=1)
+                if move_date != invoice_date:
+                    continue
+                if move.intrastat_declaration.state != 'opened':
+                    continue
+                amount = (line.company_amount
+                    if hasattr(line, 'company_amount') else line.amount)
+
+                # TODO: control correctly the possiblity to have multiple
+                # invoice lines associated the same move line.
+
+                # In this cases it will be a refund for the advanced payment.
+                if amount < 0:
+                    move.intrastat_value += line.company_amount
+                # In this cases will a update cost.
+                elif line.quantity == move.quantity:
+                    move.intrastat_value = line.company_amount
+                moves.append(move)
         if moves:
             Move.save(moves)
