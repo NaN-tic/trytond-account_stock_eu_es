@@ -14,9 +14,13 @@ def register():
         stock.ShipmentOut,
         purchase.PurchaseLine,
         sale.SaleLine,
-        module='account_stock_eu', type_='model')
-
+        stock.IntrastatUpdateStart,
+        module='account_stock_eu_es', type_='model')
     Pool.register(
         invoice.Invoice,
-        module='account_stock_eu', type_='model',
+        invoice.InvoiceLine,
+        module='account_stock_eu_es', type_='model',
         depends=['account_invoice_stock'])
+    Pool.register(
+        stock.IntrastatUpdate,
+        module='account_stock_eu_es', type_='wizard')
