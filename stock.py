@@ -109,41 +109,10 @@ class ShipmentMixin:
 class ShipmentIn(ShipmentMixin, metaclass=PoolMeta):
     __name__ = 'stock.shipment.in'
 
-    # # TODO: set in core!
-    # @fields.depends('supplier')
-    # def on_change_supplier(self):
-    #     super().on_change_supplier()
-
     @fields.depends('contact_address')
     def on_change_contact_address(self):
         if self.contact_address:
             self.intrastat_from_country = self.contact_address.country
-
-    # TODO: in core
-    @fields.depends('warehouse')
-    def on_change_with_intrastat_to_country(self, name=None):
-        if (self.warehouse
-                and self.warehouse.address
-                and self.warehouse.address.country):
-            return self.warehouse.address.country.id
-
-
-class ShipmentInReturn(ShipmentMixin, metaclass=PoolMeta):
-    __name__ = 'stock.shipment.in.return'
-
-    # TODO: Core
-    @fields.depends('warehouse')
-    def on_change_with_intrastat_from_country(self, name=None):
-        if (self.warehouse
-                and self.warehouse.address
-                and self.warehouse.address.country):
-            return self.warehouse.address.country.id
-
-    #TODO: Core
-    @fields.depends('delivery_address')
-    def on_change_with_intrastat_to_country(self, name=None):
-        if self.delivery_address and self.delivery_address.country:
-            return self.delivery_address.country.id
 
 
 class ShipmentOut(ShipmentMixin, metaclass=PoolMeta):
@@ -155,51 +124,3 @@ class ShipmentOut(ShipmentMixin, metaclass=PoolMeta):
         except AttributeError:
             pass
         self.intrastat_transport = self.carrier.intrastat_transport
-
-    #TODO: Core
-    @fields.depends('warehouse')
-    def on_change_with_intrastat_from_country(self, name=None):
-        if (self.warehouse
-                and self.warehouse.address
-                and self.warehouse.address.country):
-            return self.warehouse.address.country.id
-
-    #TODO: Core
-    @fields.depends('delivery_address')
-    def on_change_with_intrastat_to_country(self, name=None):
-        if self.delivery_address and self.delivery_address.country:
-            return self.delivery_address.country.id
-
-
-class ShipmentOutReturn(ShipmentMixin, metaclass=PoolMeta):
-    __name__ = 'stock.shipment.out.return'
-
-    #TODO: Core
-    @fields.depends('warehouse')
-    def on_change_with_intrastat_to_country(self, name=None):
-        if (self.warehouse
-                and self.warehouse.address
-                and self.warehouse.address.country):
-            return self.warehouse.address.country.id
-
-
-class ShipmentInternal(ShipmentMixin, metaclass=PoolMeta):
-    __name__ = 'stock.shipment.internal'
-
-    #TODO: Core
-    @fields.depends('from_location')
-    def on_change_with_intrastat_from_country(self, name=None):
-        if (self.from_location
-                and self.from_location.warehouse
-                and self.from_location.warehouse.address
-                and self.from_location.warehouse.address.country):
-            return self.from_location.warehouse.address.country.id
-
-    #TODO: Core
-    @fields.depends('to_location')
-    def on_change_with_intrastat_to_country(self, name=None):
-        if (self.to_location
-                and self.to_location.warehouse
-                and self.to_location.warehouse.address
-                and self.to_location.warehouse.address.country):
-            return self.to_location.warehouse.address.country.id
