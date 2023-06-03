@@ -11,10 +11,7 @@ def register():
     Pool.register(
         stock.Move,
         stock.ShipmentIn,
-        stock.ShipmentInReturn,
         stock.ShipmentOut,
-        stock.ShipmentOutReturn,
-        stock.ShipmentInternal,
         purchase.PurchaseLine,
         sale.SaleLine,
         module='account_stock_eu', type_='model')
