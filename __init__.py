@@ -12,6 +12,8 @@ def register():
         stock.Move,
         stock.ShipmentIn,
         stock.ShipmentOut,
+        stock.ShipmentInReturn,
+        stock.ShipmentOutReturn,
         purchase.PurchaseLine,
         sale.SaleLine,
         stock.IntrastatUpdateStart,
