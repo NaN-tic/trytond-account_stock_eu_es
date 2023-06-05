@@ -129,6 +129,14 @@ class ShipmentOut(ShipmentMixin, metaclass=PoolMeta):
         self.intrastat_transport = self.carrier.intrastat_transport
 
 
+class ShipmentInReturn(ShipmentMixin, metaclass=PoolMeta):
+    __name__ = 'stock.shipment.in.return'
+
+
+class ShipmentOutReturn(ShipmentMixin, metaclass=PoolMeta):
+    __name__ = 'stock.shipment.out.return'
+
+
 class IntrastatUpdateStart(ModelView):
     "Intrastat Update Start"
     __name__ = 'account.stock.eu.intrastat.update.start'
