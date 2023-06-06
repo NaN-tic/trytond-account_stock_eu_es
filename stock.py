@@ -129,6 +129,10 @@ class ShipmentOut(ShipmentMixin, metaclass=PoolMeta):
         self.intrastat_transport = self.carrier.intrastat_transport
 
 
+class ShipmentInternal(ShipmentMixin, metaclass=PoolMeta):
+    __name__ = 'stock.shipment.internal'
+
+
 class ShipmentInReturn(ShipmentMixin, metaclass=PoolMeta):
     __name__ = 'stock.shipment.in.return'
 
