@@ -19,6 +19,8 @@ class Move(metaclass=PoolMeta):
         Country = pool.get('country.country')
         super()._set_intrastat()
 
+        if not self.intrastat_type:
+            return
         country_of_origin_code = ('PT' if self.product
             and self.product.producible
             and (self.product.account_category.id == 11
@@ -49,6 +51,14 @@ class Move(metaclass=PoolMeta):
         if not self.intrastat_tariff_code:
             self.intrastat_tariff_code = self.product.get_tariff_code(
                 self._intrastat_tariff_code_pattern_wo_country())
+        if (not self.intrastat_additional_unit
+                and self.intrastat_tariff_code
+                and self.intrastat_tariff_code.intrastat_uom):
+            quantity = self._intrastat_quantity(
+                self.intrastat_tariff_code.intrastat_uom)
+            if quantity is not None:
+                ndigits = self.__class__.intrastat_additional_unit.digits[1]
+                self.intrastat_additional_unit = round(quantity, ndigits)
 
         if (not self.intrastat_transport
                 and self.shipment and self.shipment.intrastat_transport):
