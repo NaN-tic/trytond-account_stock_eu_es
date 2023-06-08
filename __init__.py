@@ -2,13 +2,14 @@
 # this repository contains the full copyright notices and license terms.
 from trytond.pool import Pool
 
-from . import invoice, purchase, sale, stock
+from . import country, invoice, purchase, sale, stock
 
 __all__ = ['register']
 
 
 def register():
     Pool.register(
+        country.Country,
         stock.Move,
         stock.ShipmentIn,
         stock.ShipmentOut,
