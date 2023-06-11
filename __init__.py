@@ -2,9 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 from trytond.pool import Pool
 
-from . import country, invoice, purchase, sale, stock
-
-__all__ = ['register']
+from . import account_stock_eu, country, invoice, purchase, sale, stock
 
 
 def register():
@@ -18,13 +16,14 @@ def register():
         stock.ShipmentInternal,
         purchase.PurchaseLine,
         sale.SaleLine,
-        stock.IntrastatUpdateStart,
+        account_stock_eu.IntrastatUpdateStart,
         module='account_stock_eu_es', type_='model')
     Pool.register(
+        invoice.Configuration,
+        invoice.ConfigurationIntrastat,
         invoice.Invoice,
-        invoice.InvoiceLine,
         module='account_stock_eu_es', type_='model',
         depends=['account_invoice_stock'])
     Pool.register(
-        stock.IntrastatUpdate,
+        account_stock_eu.IntrastatUpdate,
         module='account_stock_eu_es', type_='wizard')
