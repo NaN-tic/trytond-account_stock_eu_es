@@ -1,53 +1,29 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+from decimal import Decimal
 from trytond.model import fields, ModelView
 from trytond.pool import Pool, PoolMeta
 from trytond.wizard import Button, StateTransition, StateView, Wizard
+from trytond.transaction import Transaction
 
 
 class Move(metaclass=PoolMeta):
     __name__ = 'stock.move'
 
-    @fields.depends('intrastat_tariff_code')
-    def on_change_with_intrastat_tariff_code_uom(self, name=None):
-        if (self.intrastat_tariff_code
-                and self.intrastat_tariff_code.intrastat_uom):
-            return self.intrastat_tariff_code.intrastat_uom.id
+    @classmethod
+    def _update_intrastat(cls, moves):
+        if not Transaction().context.get('_update_intrastat_declaration'):
+            super()._update_intrastat(moves)
 
     def _set_intrastat(self):
         pool = Pool()
-        Country = pool.get('country.country')
+        SaleLine = pool.get('sale.line')
+        PurchaseLine = pool.get('purchase.line')
+
         super()._set_intrastat()
 
         if not self.intrastat_type:
             return
-        country_of_origin_code = ('PT' if self.product
-            and self.product.producible
-            and (self.product.account_category.id == 11
-                or (self.product.account_category.parent
-                    and self.product.account_category.parent.id == 11))
-            else ('ES' if self.product and self.product.producible
-                else (self.product.product_suppliers[0].party.addresses[0].
-                      country.code if self.product 
-                      and self.product.product_suppliers 
-                      and self.product.product_suppliers[0].party 
-                      and self.product.product_suppliers[0].party.addresses 
-                      else 'ES')))
-        country_of_origins = Country.search([
-                ('code', '=', country_of_origin_code)
-                ], limit=1)
-        if country_of_origins:
-            self.intrastat_country_of_origin = country_of_origins[0]
-
-        # if self.intrastat_type == 'arrival':
-        #     pass
-        # elif self.intrastat_type == 'dispatch':
-        #     pass
-        #     #self.intrastat_country_of_origin = (self.shipment
-        #     #    and self.shipment.delivery_address
-        #     #    and self.shipment.delivery_address.country
-        #     #    or None)
-
         if not self.intrastat_tariff_code:
             self.intrastat_tariff_code = self.product.get_tariff_code(
                 self._intrastat_tariff_code_pattern_wo_country())
@@ -64,10 +40,73 @@ class Move(metaclass=PoolMeta):
                 and self.shipment and self.shipment.intrastat_transport):
             self.intrastat_transport = self.shipment.intrastat_transport
 
+        if not self.intrastat_incoterm:
+            if self.origin:
+                if isinstance(self.origin, SaleLine):
+                    self.intrastat_incoterm = self.origin.sale.incoterm or None
+                elif isinstance(self.origin, PurchaseLine):
+                    self.intrastat_incoterm = (self.origin.purchase.incoterm
+                        or None)
+
     def _intrastat_tariff_code_pattern_wo_country(self):
         return {
             'date': self.effective_date,
             }
+
+    def _intrastat_value(self):
+        pool = Pool()
+        Move = pool.get('stock.move')
+        Currency = pool.get('currency.currency')
+
+        intrastat_value_from_invoice = Decimal('0.0')
+        invoices = [l.invoice for l in self.invoice_lines
+            if l.invoice and l.invoice.state in ('posted', 'paid')]
+        # TODO: Control correctly UoM
+        quantity = sum(l.quantity for l in self.invoice_lines if l.quantity > 0)
+        intrastat_value = super()._intrastat_value()
+        if invoices and quantity == self.quantity:
+            intrastat_value_from_invoice = Move._intrastat_value_from_invoices(
+                self, invoices, intrastat_value)
+            ndigits = Move.intrastat_value.digits[1]
+            with Transaction().set_context(
+                    date=self.effective_date or self.planned_date):
+                intrastat_value_from_invoice = round(Currency.compute(
+                        self.currency,
+                        intrastat_value_from_invoice,
+                        self.company.intrastat_currency,
+                        round=False), ndigits)
+
+        return intrastat_value_from_invoice or intrastat_value
+
+    @classmethod
+    def _intrastat_value_from_invoices(cls, move, invoices, intrastat_value):
+        pool = Pool()
+        Invoice = pool.get('account.invoice')
+        InvoiceLine = pool.get('account.invoice.line')
+
+        lines_discounts = Invoice.get_invoice_intrastat_discount_per_line(
+            invoices)
+
+        value = 0
+        for line, amount in lines_discounts.items():
+            if move not in line.stock_moves:
+                continue
+            # Ensure that cache only take this 'line' an not 1.000
+            # registers. Beacsue in some cases the line may don't have and
+            # ivoice assocaited yet and it's needed for the company_amount
+            # field calculation.
+            line = InvoiceLine(line)
+            invoice_date = (line.invoice.accounting_date
+                or line.invoice.invoice_date)
+            invoice_date = invoice_date.replace(day=1)
+
+            move_date = move.effective_date or move.planned_date
+            move_date = move_date.replace(day=1)
+            if move_date != invoice_date:
+                continue
+            # Amount arrive with the sign setted in the line.
+            value += amount
+        return value
 
     def _intrastat_quantity(self, uom):
         pool = Pool()
@@ -91,24 +130,18 @@ class Move(metaclass=PoolMeta):
                 return width_meter * internal_quantity_meter
         return result
 
-    # TODO: Intrastat, check how is set the destination country (firs colum in
-    # file)
-    #o.shipment and hasattr(o.shipment, 'delivery_address') and o.shipment.delivery_address.country and o.shipment.delivery_address.country.name or '(Vacío)'
-
-    # TODO: Intrastat, check how VAT is get
-    #o.shipment and hasattr(o.shipment, 'delivery_address') and o.shipment.delivery_address.party and o.shipment.delivery_address.party.tax_identifier and o.shipment.delivery_address.party.tax_identifier.code or '(Vacío)'
-
     @classmethod
-    def update_intrastat_values(cls, moves):
-        pool = Pool()
-        Warning = pool.get('res.user.warning')
-        InvoiceLine = pool.get('account.invoice.line')
-
-        for move in moves:
-            move._set_intrastat()
-
-        lines = (l for m in moves for l in m.invoice_lines)
-        InvoiceLine.update_intrastat_move_line_amount(lines)
+    def update_intrastat_declaration(cls, moves):
+        IntrastratTransport = Pool().get('account.stock.eu.intrastat.transport')
+        with Transaction().set_context(_update_intrastat_declaration=True):
+            for move in moves:
+                move.intrastat_type = move.on_change_with_intrastat_type()
+                move._set_intrastat()
+                if not move.internal_weight:
+                    internal_weight = cls._get_internal_weight(
+                        move.quantity, move.uom, move.product)
+                    move.internal_weight = internal_weight or 0
+            cls.save(moves)
 
 
 class ShipmentMixin:
@@ -149,42 +182,3 @@ class ShipmentInReturn(ShipmentMixin, metaclass=PoolMeta):
 
 class ShipmentOutReturn(ShipmentMixin, metaclass=PoolMeta):
     __name__ = 'stock.shipment.out.return'
-
-
-class IntrastatUpdateStart(ModelView):
-    "Intrastat Update Start"
-    __name__ = 'account.stock.eu.intrastat.update.start'
-
-    period = fields.Many2One('account.period', 'Period', required=True,
-        domain=[
-            ('type', '=', 'standard'),
-            ])
-
-
-class IntrastatUpdate(Wizard):
-    "Intrastat Update"
-    __name__ = 'account.stock.eu.intrastat.update'
-    start = StateView(
-        'account.stock.eu.intrastat.update.start',
-        'account_stock_eu_es.intrastat_update_start_view_form', [
-            Button("Cancel", 'end', 'tryton-close'),
-            Button("Update", 'update', 'tryton-ok'),
-            ])
-    update = StateTransition()
-
-    def transition_update(self):
-        pool = Pool()
-        Line = pool.get('stock.move')
-
-        start_date = self.start.period.start_date
-        end_date = self.start.period.end_date
-        moves = Line.search([
-                ['OR',
-                    ('shipment', 'ilike', 'stock.shipment.in,%'),
-                    ('shipment', 'ilike', 'stock.shipment.out,%')],
-                ('state', '=', 'done'),
-                ('effective_date', '>=', start_date),
-                ('effective_date', '<=', end_date),
-                ])
-        Line.update_intrastat_values(moves)
-        return 'end'

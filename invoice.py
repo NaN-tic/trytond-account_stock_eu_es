@@ -1,66 +1,92 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
-from trytond.model import fields
+from decimal import Decimal
 from trytond.pool import Pool, PoolMeta
-from trytond.model import ModelView, Workflow
+from trytond.model import ModelView, Workflow, ModelSQL, fields
+from trytond.modules.company.model import CompanyValueMixin
+
+
+class Configuration(metaclass=PoolMeta):
+    __name__ = 'account.configuration'
+
+    intrastat_discount_product = fields.MultiValue(
+        fields.Many2One('product.product', "Intrastat Discount Product",
+            help="If setted, when calcaulate the amount of the Intrastata move"
+            " it take the discount line if exit from the same invoice."))
+
+    @classmethod
+    def multivalue_model(cls, field):
+        pool = Pool()
+        if field in {'intrastat_discount_product'}:
+            return pool.get('account.configuration.intrastat')
+        return super().multivalue_model(field)
+
+
+class ConfigurationIntrastat(ModelSQL, CompanyValueMixin):
+    "Account Configuration Intrastat"
+    __name__ = 'account.configuration.intrastat'
+
+    intrastat_discount_product = fields.Many2One('product.product',
+        "Intrastat Discout Product")
 
 
 class Invoice(metaclass=PoolMeta):
-    __name__ = 'stock.move'
+    __name__ = 'account.invoice'
 
     @classmethod
-    @ModelView.button
-    @Workflow.transition('posted')
-    def post(cls, invoices):
+    def get_invoice_intrastat_discount_per_line(cls, invoices):
         pool = Pool()
         InvoiceLine = pool.get('account.invoice.line')
+        Configuration = pool.get('account.configuration')
 
-        lines = [l for i in invoices for l in i.lines]
-        InvoiceLine.update_intrastat_move_line_amount(lines)
-
-
-class InvoiceLine(metaclass=PoolMeta):
-    __name__ = 'account.invoice.line'
+        config = Configuration(1)
+        discount_product = config.intrastat_discount_product
+        # Needs invoices in order from old to new, to ensure apply correctly
+        # the amount of each line in the time order.
+        invoices = cls.search([
+                ('id', 'in', [i.id for i in invoices]),
+                ], order=[('invoice_date', 'ASC')])
+        if discount_product:
+            lines = {}
+            for invoice in invoices:
+                aux_lines = {}
+                discount = Decimal('0.0')
+                quantity = 0
+                # As normaly the discount line will be negative apply it at
+                # the end of the loop.
+                invoice_lines = InvoiceLine.search([
+                        ('id', 'in', [l.id for l in invoice.lines]),
+                        ], order=[('quantity', 'DESC')])
+                # TODO: Control lines UoM to calculate the discount per unit
+                for line in invoice_lines:
+                    if line.product == discount_product:
+                        discount += (line.company_amount
+                            if hasattr(line, 'company_amount')
+                            else line.amount)
+                    else:
+                        quantity += line.quantity
+                        amount = (line.company_amount
+                            if hasattr(line, 'company_amount') else line.amount)
+                        aux_lines[line] = amount
+                if quantity and discount:
+                    discount_per_unit = discount / Decimal(
+                        str(quantity or '0.0'))
+                    for key, value in aux_lines.items():
+                        aux_lines[key] += (Decimal(str(key.quantity or '0.0'))
+                            * discount_per_unit)
+                lines.update(aux_lines)
+        else:
+            lines = {l: Decimal('0.0') for i in invoices for l in i.lines}
+        return lines
 
     @classmethod
-    def update_intrastat_move_line_amount(cls, lines):
+    def _post(cls, invoices):
         pool = Pool()
         Move = pool.get('stock.move')
 
-        moves = []
-        for line in lines:
-            # Ensure that cache only take this 'line' an not 1.000
-            # registers. Beacsue in some cases the line may don't have and
-            # ivoice assocaited yet and it's needed for the company_amount
-            # field calculation.
-            line = cls(line)
-            if (not line.invoice
-                    or line.invoice.state not in ('posted', 'paid')):
-                continue
-            invoice_date = (line.invoice.accounting_date
-                or line.invoice.invoice_date)
-            invoice_date = invoice_date.replace(day=1)
-            for move in line.stock_moves:
-                if not move.intrastat_type or not move.intrastat_incoterm:
-                    continue
-                move_date = move.effective_date or move.planned_date
-                move_date = move_date.replace(day=1)
-                if move_date != invoice_date:
-                    continue
-                if move.intrastat_declaration.state != 'opened':
-                    continue
-                amount = (line.company_amount
-                    if hasattr(line, 'company_amount') else line.amount)
-
-                # TODO: control correctly the possiblity to have multiple
-                # invoice lines associated the same move line.
-
-                # In this cases it will be a refund for the advanced payment.
-                if amount < 0:
-                    move.intrastat_value += line.company_amount
-                # In this cases will a update cost.
-                elif line.quantity == move.quantity:
-                    move.intrastat_value = line.company_amount
-                moves.append(move)
-        if moves:
-            Move.save(moves)
+        # Get all the sotck move related with the invoce line, to update they
+        # intrastat_value if it's required.
+        lines = [l for i in invoices for l in i.lines]
+        moves = [m for l in lines for m in l.stock_moves]
+        super()._post(invoices)
+        Move.update_intrastat_declaration(moves)

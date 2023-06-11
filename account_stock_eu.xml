@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<tryton>
+    <data>
+        <record model="ir.action.wizard" id="act_intrastat_update_wizard">
+            <field name="name">Update Intrastat</field>
+            <field name="wiz_name">account.stock.eu.intrastat.update</field>
+        </record>
+
+        <menuitem
+            parent="account_stock_eu.menu_intrastat_declaration"
+            action="act_intrastat_update_wizard"
+            sequence="50"
+            id="menu_intrastat_update"/>
+
+        <record model="ir.ui.view" id="intrastat_update_start_view_form">
+            <field name="model">account.stock.eu.intrastat.update.start</field>
+            <field name="type">form</field>
+            <field name="name">intrastat_update_start_form</field>
+        </record>
+    </data>
+</tryton>
