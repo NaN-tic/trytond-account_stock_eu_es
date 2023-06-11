@@ -27,6 +27,9 @@ class Move(metaclass=PoolMeta):
         if not self.intrastat_tariff_code:
             self.intrastat_tariff_code = self.product.get_tariff_code(
                 self._intrastat_tariff_code_pattern_wo_country())
+        if not self.intrastat_tariff_code:
+            self.intrastat_type = None
+            return
         if (not self.intrastat_additional_unit
                 and self.intrastat_tariff_code
                 and self.intrastat_tariff_code.intrastat_uom):
@@ -132,9 +135,17 @@ class Move(metaclass=PoolMeta):
 
     @classmethod
     def update_intrastat_declaration(cls, moves):
-        IntrastratTransport = Pool().get('account.stock.eu.intrastat.transport')
+        pool = Pool()
+        ShipmentIn = pool.get('stock.shipment.in')
+        ShipmentOutReturn = pool.get('stock.shipment.out.return')
+
         with Transaction().set_context(_update_intrastat_declaration=True):
             for move in moves:
+                if move.shipment and isinstance(move.shipment, ShipmentIn):
+                    move.shipment.on_change_supplier()
+                elif (move.shipment
+                        and isinstance(move.shipment, ShipmentOutReturn)):
+                    move.shipment.on_change_customer()
                 move.intrastat_type = move.on_change_with_intrastat_type()
                 move._set_intrastat()
                 if not move.internal_weight:
