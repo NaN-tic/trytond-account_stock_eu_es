@@ -175,12 +175,14 @@ class ShipmentIn(ShipmentMixin, metaclass=PoolMeta):
 class ShipmentOut(ShipmentMixin, metaclass=PoolMeta):
     __name__ = 'stock.shipment.out'
 
+    @fields.depends('carrier')
     def on_change_carrier(self):
         try:
             super().on_change_carrier()
         except AttributeError:
             pass
-        self.intrastat_transport = self.carrier.intrastat_transport
+        if self.carrier:
+            self.intrastat_transport = self.carrier.intrastat_transport
 
 
 class ShipmentInternal(ShipmentMixin, metaclass=PoolMeta):
