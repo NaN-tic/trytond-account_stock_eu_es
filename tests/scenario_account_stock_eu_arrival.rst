@@ -211,7 +211,6 @@ Receive returned products from France::
 
     >>> shipment = ShipmentOutReturn()
     >>> shipment.customer = customer_fr
-    >>> shipment.delivery_address = customer_fr.addresses[0]
     >>> move = shipment.incoming_moves.new()
     >>> move.from_location = shipment.customer_location
     >>> move.to_location = shipment.warehouse_input
