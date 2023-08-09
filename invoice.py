@@ -84,9 +84,44 @@ class Invoice(metaclass=PoolMeta):
         pool = Pool()
         Move = pool.get('stock.move')
 
-        # Get all the sotck move related with the invoce line, to update they
+        # Get all the stock move related with the invoce lines, to update they
         # intrastat_value if it's required.
         lines = [l for i in invoices for l in i.lines]
         moves = [m for l in lines for m in l.stock_moves]
         super()._post(invoices)
+        Move.update_intrastat_declaration(moves)
+
+    @classmethod
+    def cancel(cls, invoices):
+        pool = Pool()
+        Move = pool.get('stock.move')
+
+        super().cancel(invoices)
+        # Get all the sotck move related with the invoce lines, to remove from
+        # the Intrastata report.
+        lines = [l for i in invoices for l in i.lines]
+        moves = [m for l in lines for m in l.stock_moves
+            if m.intrastat_type is not None]
+        values = {
+            'intrastat_cancelled': True,
+            'intrastat_type': None,
+            'intrastat_declaration': None,
+            }
+        Move.write(moves, values)
+
+    @classmethod
+    def draft(cls, invoices):
+        pool = Pool()
+        Move = pool.get('stock.move')
+
+        super().draft(invoices)
+        # Get all the sotck move related with the invoce lines, to remove from
+        # the Intrastata report.
+        lines = [l for i in invoices for l in i.lines]
+        moves = [m for l in lines for m in l.stock_moves
+            if m.intrastat_cancelled]
+        values = {
+            'intrastat_cancelled': False,
+            }
+        Move.write(moves, values)
         Move.update_intrastat_declaration(moves)

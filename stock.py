@@ -10,6 +10,12 @@ from trytond.transaction import Transaction
 class Move(metaclass=PoolMeta):
     __name__ = 'stock.move'
 
+    intrastat_cancelled = fields.Boolean("Intrastat Cancelled")
+
+    @staticmethod
+    def default_intrastat_cancelled():
+        return False
+
     @classmethod
     def _update_intrastat(cls, moves):
         if not Transaction().context.get('_update_intrastat_declaration'):
@@ -142,6 +148,12 @@ class Move(metaclass=PoolMeta):
                         move.quantity, move.uom, move.product)
                     move.internal_weight = internal_weight or 0
             cls.save(moves)
+
+    @classmethod
+    def copy(cls, moves, default=None):
+        default = default.copy() if default else {}
+        default.setdefault('intrastat_cancelled')
+        return super().copy(moves, default=default)
 
 
 class ShipmentMixin:
