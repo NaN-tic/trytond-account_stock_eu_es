@@ -30,7 +30,18 @@ class Move(metaclass=PoolMeta):
 
         if not self.intrastat_type:
             return
-        if not self.intrastat_tariff_code:
+        # Some times is possible that user change or remove the tariff_code in
+        # some products after some moves of this productes are done. So, when
+        # update some moves Intrastat values is need to reset the tariff_code.
+        if Transaction().context.get('_update_intrastat_declaration'):
+            intrastat_tariff_code = self.product.get_tariff_code(
+                self._intrastat_tariff_code_pattern())
+            if not intrastat_tariff_code:
+                intrastat_tariff_code = self.product.get_tariff_code(
+                    self._intrastat_tariff_code_pattern_wo_country())
+            if intrastat_tariff_code != self.intrastat_tariff_code:
+                self.intrastat_tariff_code = intrastat_tariff_code
+        elif not self.intrastat_tariff_code:
             self.intrastat_tariff_code = self.product.get_tariff_code(
                 self._intrastat_tariff_code_pattern_wo_country())
         if (not self.intrastat_additional_unit
