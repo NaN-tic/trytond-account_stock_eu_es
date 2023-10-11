@@ -2,7 +2,7 @@
 # this repository contains the full copyright notices and license terms.
 from decimal import Decimal
 from trytond.pool import Pool, PoolMeta
-from trytond.model import ModelView, Workflow, ModelSQL, fields
+from trytond.model import ModelSQL, fields
 from trytond.modules.company.model import CompanyValueMixin
 
 

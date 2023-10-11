@@ -1,9 +1,8 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 from decimal import Decimal
-from trytond.model import fields, ModelView
+from trytond.model import fields
 from trytond.pool import Pool, PoolMeta
-from trytond.wizard import Button, StateTransition, StateView, Wizard
 from trytond.transaction import Transaction
 
 
@@ -149,7 +148,6 @@ class Move(metaclass=PoolMeta):
 
     @classmethod
     def update_intrastat_declaration(cls, moves):
-        IntrastratTransport = Pool().get('account.stock.eu.intrastat.transport')
         with Transaction().set_context(_update_intrastat_declaration=True):
             for move in moves:
                 move.intrastat_type = move.on_change_with_intrastat_type()
