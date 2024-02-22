@@ -133,14 +133,14 @@ class Move(metaclass=PoolMeta):
         if not result:
             m = UoM(ModelData.get_id('product', 'uom_meter'))
             if (self.product.width
-                    and self.product.width_uom.category == self.uom.category
-                    and self.uom.category == m.category):
+                    and self.product.width_uom.category == self.unit.category
+                    and self.unit.category == m.category):
                 width_meter = UoM.compute_qty(
                     self.product.width_uom,
                     self.product.width,
                     m, round=False)
                 internal_quantity_meter = UoM.compute_qty(
-                    self.uom,
+                    self.unit,
                     self.internal_quantity,
                     m, round=False)
                 return width_meter * internal_quantity_meter
@@ -154,7 +154,7 @@ class Move(metaclass=PoolMeta):
                 move._set_intrastat()
                 if not move.internal_weight:
                     internal_weight = cls._get_internal_weight(
-                        move.quantity, move.uom, move.product)
+                        move.quantity, move.unit, move.product)
                     move.internal_weight = internal_weight or 0
             cls.save(moves)
 
