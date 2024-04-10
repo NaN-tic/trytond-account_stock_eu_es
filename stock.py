@@ -150,6 +150,16 @@ class Move(metaclass=PoolMeta):
     def update_intrastat_declaration(cls, moves):
         with Transaction().set_context(_update_intrastat_declaration=True):
             for move in moves:
+                if (move.invoice_lines
+                        and any(i.state == 'cancelled'
+                            for line in move.invoice_lines
+                            for i in line.invoice)):
+                    continue
+                if move.shipment and isinstance(move.shipment, ShipmentIn):
+                    move.shipment.on_change_supplier()
+                elif (move.shipment
+                        and isinstance(move.shipment, ShipmentOutReturn)):
+                    move.shipment.on_change_customer()
                 move.intrastat_type = move.on_change_with_intrastat_type()
                 move._set_intrastat()
                 if not move.internal_weight:
