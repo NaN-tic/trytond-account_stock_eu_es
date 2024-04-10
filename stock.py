@@ -158,6 +158,11 @@ class Move(metaclass=PoolMeta):
 
         with Transaction().set_context(_update_intrastat_declaration=True):
             for move in moves:
+                if (move.invoice_lines
+                        and any(i.state == 'cancelled'
+                            for line in move.invoice_lines
+                            for i in line.invoice)):
+                    continue
                 if move.shipment and isinstance(move.shipment, ShipmentIn):
                     move.shipment.on_change_supplier()
                 elif (move.shipment

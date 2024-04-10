@@ -108,6 +108,8 @@ class Invoice(metaclass=PoolMeta):
             'intrastat_declaration': None,
             }
         Move.write(moves, values)
+        moves = Move.browse(moves)
+        Move.update_intrastat_declaration(moves)
 
     @classmethod
     def draft(cls, invoices):
@@ -124,4 +126,5 @@ class Invoice(metaclass=PoolMeta):
             'intrastat_cancelled': False,
             }
         Move.write(moves, values)
+        moves = Move.browse(moves)
         Move.update_intrastat_declaration(moves)
