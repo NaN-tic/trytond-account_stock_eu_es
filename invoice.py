@@ -50,7 +50,7 @@ class Invoice(metaclass=PoolMeta):
             lines = {}
             for invoice in invoices:
                 aux_lines = {}
-                discount = Decimal('0.0')
+                discount = Decimal(0)
                 quantity = 0
                 # As normaly the discount line will be negative apply it at
                 # the end of the loop.
@@ -76,7 +76,7 @@ class Invoice(metaclass=PoolMeta):
                             * discount_per_unit)
                 lines.update(aux_lines)
         else:
-            lines = {l: Decimal('0.0') for i in invoices for l in i.lines}
+            lines = {l: Decimal(0) for i in invoices for l in i.lines}
         return lines
 
     @classmethod
