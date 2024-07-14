@@ -79,7 +79,8 @@ class Move(metaclass=PoolMeta):
             if l.invoice and l.invoice.state in ('posted', 'paid')]
         # TODO: Control correctly UoM
         quantity = sum(l.quantity for l in self.invoice_lines if l.quantity > 0)
-        intrastat_value = super()._intrastat_value()
+        intrastat_value = (super()._intrastat_value()
+            if self.currency else Decimal('0.0'))
         if invoices and quantity == self.quantity:
             intrastat_value_from_invoice = Move._intrastat_value_from_invoices(
                 self, invoices, intrastat_value)
