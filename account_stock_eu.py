@@ -3,6 +3,7 @@
 from trytond.model import fields, ModelView
 from trytond.pool import Pool
 from trytond.wizard import Button, StateTransition, StateView, Wizard
+from trytond.transaction import Transaction
 
 
 class IntrastatUpdateStart(ModelView):
@@ -32,15 +33,18 @@ class IntrastatUpdate(Wizard):
 
         start_date = self.start.period.start_date
         end_date = self.start.period.end_date
+        company = Transaction().context.get('company')
         moves = Move.search([
                 ['OR',
                     ('shipment', 'ilike', 'stock.shipment.in,%'),
                     ('shipment', 'ilike', 'stock.shipment.out,%'),
                     ('shipment', 'ilike', 'stock.shipment.in.return,%'),
-                    ('shipment', 'ilike', 'stock.shipment.out.return,%')],
+                    ('shipment', 'ilike', 'stock.shipment.out.return,%')
+                    ],
                 ('state', '=', 'done'),
                 ('effective_date', '>=', start_date),
                 ('effective_date', '<=', end_date),
+                ('company', '=', company),
                 ])
         Move.update_intrastat_declaration(moves)
         return 'end'
