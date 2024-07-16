@@ -15,6 +15,7 @@ def register():
         stock.ShipmentOutReturn,
         stock.ShipmentInternal,
         purchase.PurchaseLine,
+        sale.Sale,
         sale.SaleLine,
         account_stock_eu.IntrastatUpdateStart,
         module='account_stock_eu_es', type_='model')
