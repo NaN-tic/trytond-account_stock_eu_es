@@ -24,6 +24,10 @@ class Move(metaclass=PoolMeta):
         pool = Pool()
         SaleLine = pool.get('sale.line')
         PurchaseLine = pool.get('purchase.line')
+        ShipmentIn = pool.get('stock.shipment.in')
+        ShipmentInReturn = pool.get('stock.shipment.in.return')
+        ShipmentOut = pool.get('stock.shipment.out')
+        ShipmentOutReturn = pool.get('stock.shipment.out.return')
 
         super()._set_intrastat()
 
@@ -57,12 +61,23 @@ class Move(metaclass=PoolMeta):
             self.intrastat_transport = self.shipment.intrastat_transport
 
         if not self.intrastat_incoterm:
+            # Try to set Incoterm from origin
             if self.origin:
                 if isinstance(self.origin, SaleLine):
                     self.intrastat_incoterm = self.origin.sale.incoterm or None
                 elif isinstance(self.origin, PurchaseLine):
                     self.intrastat_incoterm = (self.origin.purchase.incoterm
                         or None)
+        if not self.intrastat_incoterm:
+            # Try to set Incoterm from party
+            shipment = self.shipment
+            party_incoterms = []
+            if isinstance(shipment, (ShipmentIn, ShipmentInReturn)):
+                party_incoterms = shipment.supplier.purchase_incoterms
+            if isinstance(shipment, (ShipmentOut, ShipmentOutReturn)):
+                party_incoterms = shipment.customer.sale_incoterms
+            if party_incoterms and len(party_incoterms) == 1:
+                self.intrastat_incoterm = party_incoterms[0].incoterm
 
     def _intrastat_tariff_code_pattern_wo_country(self):
         return {
@@ -149,6 +164,10 @@ class Move(metaclass=PoolMeta):
 
     @classmethod
     def update_intrastat_declaration(cls, moves):
+        pool = Pool()
+        ShipmentIn = pool.get('stock.shipment.in')
+        ShipmentOutReturn = pool.get('stock.shipment.out.return')
+
         with Transaction().set_context(_update_intrastat_declaration=True):
             for move in moves:
                 if (move.invoice_lines
