@@ -60,7 +60,7 @@ class Move(metaclass=PoolMeta):
                 and self.shipment and self.shipment.intrastat_transport):
             self.intrastat_transport = self.shipment.intrastat_transport
 
-        if (self.intrastat_extended and not self.intrastat_incoterm):
+        if self.intrastat_extended and not self.intrastat_incoterm:
             # Try to set Incoterm from origin
             if self.origin:
                 if isinstance(self.origin, SaleLine):
