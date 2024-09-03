@@ -56,11 +56,11 @@ class Move(metaclass=PoolMeta):
                 ndigits = self.__class__.intrastat_additional_unit.digits[1]
                 self.intrastat_additional_unit = round(quantity, ndigits)
 
-        if (self.intrastat_extended and not self.intrastat_transport
-                and self.shipment and self.shipment.intrastat_transport):
+        if (not self.intrastat_transport and self.shipment
+                and self.shipment.intrastat_transport):
             self.intrastat_transport = self.shipment.intrastat_transport
 
-        if self.intrastat_extended and not self.intrastat_incoterm:
+        if not self.intrastat_incoterm:
             # Try to set Incoterm from origin
             if self.origin:
                 if isinstance(self.origin, SaleLine):
@@ -68,7 +68,7 @@ class Move(metaclass=PoolMeta):
                 elif isinstance(self.origin, PurchaseLine):
                     self.intrastat_incoterm = (self.origin.purchase.incoterm
                         or None)
-        if self.intrastat_extended and not self.intrastat_incoterm:
+        if not self.intrastat_incoterm:
             # Try to set Incoterm from party
             shipment = self.shipment
             party_incoterms = []
