@@ -160,7 +160,8 @@ class Move(metaclass=PoolMeta):
             for move in moves:
                 if (move.invoice_lines
                         and any(line.invoice.state == 'cancelled'
-                            for line in move.invoice_lines)):
+                            for line in move.invoice_lines
+                            if line.invoice is not None)):
                     continue
                 if move.shipment and isinstance(move.shipment, ShipmentIn):
                     move.shipment.on_change_supplier()
