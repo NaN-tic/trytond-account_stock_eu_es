@@ -3,7 +3,7 @@
 from trytond.pool import Pool
 
 from . import (account, account_stock_eu, country, invoice, purchase, sale,
-    stock)
+    stock, company)
 
 
 def register():
@@ -20,6 +20,7 @@ def register():
         sale.SaleLine,
         account_stock_eu.IntrastatUpdateStart,
         account.FiscalYear,
+        company.Company,
         module='account_stock_eu_es', type_='model')
     Pool.register(
         invoice.Configuration,
