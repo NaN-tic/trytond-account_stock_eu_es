@@ -15,6 +15,12 @@ class Move(metaclass=PoolMeta):
     def default_intrastat_cancelled():
         return False
 
+    @fields.depends('company', '_parent_company.intrastat')
+    def on_change_with_intrastat_type(self):
+        if self.company and self.company.intrastat:
+            return super().on_change_with_intrastat_type()
+        return
+
     @classmethod
     def _update_intrastat(cls, moves):
         if not Transaction().context.get('_update_intrastat_declaration'):

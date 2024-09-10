@@ -45,6 +45,7 @@ class IntrastatUpdate(Wizard):
                 ('effective_date', '>=', start_date),
                 ('effective_date', '<=', end_date),
                 ('company', '=', company),
+                ('company.intrastat', '=', True),
                 ])
         Move.update_intrastat_declaration(moves)
         return 'end'
