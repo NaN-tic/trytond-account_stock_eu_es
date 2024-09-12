@@ -195,6 +195,20 @@ class Move(metaclass=PoolMeta):
             cls.save(moves)
 
     @classmethod
+    def do(cls, moves):
+        pool = Pool()
+        Company = pool.get('company.company')
+        # As in "do" function when is called the _set_intrstat function is
+        # checked if intrastat_type and intrastat_from_country and
+        # intrastat_to_country are setted. If not, rasie a warning that in
+        # the case that the company has intrastat not activated, it's not
+        # necessary.
+        company = Transaction().context.get('company')
+        skip = False if company and Company(company).intrastat else True
+        with Transaction().set_context(_skip_warnings=skip):
+            super().do(moves)
+
+    @classmethod
     def copy(cls, moves, default=None):
         default = default.copy() if default else {}
         default.setdefault('intrastat_cancelled')
