@@ -247,7 +247,7 @@ class Test(unittest.TestCase):
         self.assertEqual(export.form.filename.endswith('.csv'), True)
         self.assertEqual(
             export.form.file,
-            b'29;FR;12;2;9403 10 51;60.0;20.0;1800.00;;;CN;\r\n29;FR;21;2;9403 10 51;15.0;5.0;750.00;;;CN;FR40303265045\r\n'
+            b'29;FR;12;2;9403 10 51;60.0;20.0;1800.00;CN;\r\n29;FR;21;2;9403 10 51;15.0;5.0;750.00;CN;FR40303265045\r\n'
         )
         self.assertEqual(declaration.state, 'closed')
 
