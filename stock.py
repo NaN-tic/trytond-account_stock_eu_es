@@ -95,7 +95,8 @@ class Move(metaclass=PoolMeta):
         Move = pool.get('stock.move')
         Currency = pool.get('currency.currency')
 
-        intrastat_value_from_invoice = Decimal(0)
+        default_intrastat_value = self.product.cost_price
+        intrastat_value_from_invoice = Decimal('0.0')
         invoices = [l.invoice for l in self.invoice_lines
             if l.invoice and l.invoice.state in ('posted', 'paid')]
         # TODO: Control correctly UoM
@@ -114,7 +115,8 @@ class Move(metaclass=PoolMeta):
                         self.company.intrastat_currency,
                         round=False), ndigits)
 
-        return intrastat_value_from_invoice or intrastat_value
+        return (intrastat_value_from_invoice or intrastat_value
+            or default_intrastat_value)
 
     @classmethod
     def _intrastat_value_from_invoices(cls, move, invoices, intrastat_value):
