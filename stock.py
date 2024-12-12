@@ -95,7 +95,8 @@ class Move(metaclass=PoolMeta):
         Move = pool.get('stock.move')
         Currency = pool.get('currency.currency')
 
-        default_intrastat_value = self.product.cost_price
+        ndigits = Move.intrastat_value.digits[1]
+        default_intrastat_value = round(self.product.cost_price, ndigits)
         intrastat_value_from_invoice = Decimal('0.0')
         invoices = [l.invoice for l in self.invoice_lines
             if l.invoice and l.invoice.state in ('posted', 'paid')]
@@ -106,7 +107,6 @@ class Move(metaclass=PoolMeta):
         if invoices and quantity == self.quantity:
             intrastat_value_from_invoice = Move._intrastat_value_from_invoices(
                 self, invoices, intrastat_value)
-            ndigits = Move.intrastat_value.digits[1]
             with Transaction().set_context(
                     date=self.effective_date or self.planned_date):
                 intrastat_value_from_invoice = round(Currency.compute(
