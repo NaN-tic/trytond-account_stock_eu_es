@@ -262,7 +262,7 @@ class Test(unittest.TestCase):
         self.assertEqual(zip.namelist(), ['dispatch-0.csv'])
         self.assertEqual(
             zip.open('dispatch-0.csv').read(),
-            b'FR;2;;12;;;9403 10 51;CN;;60.0;20.0;1800.00;1800.00;\r\nFR;2;;21;;;9403 10 51;CN;;15.0;5.0;750.00;750.00;FR40303265045\r\n'
+            b'FR;2;;12;;;9403 10 51;CN;;60.000;20.0;1800.00;1800.00;\r\nFR;2;;21;;;9403 10 51;CN;;15.000;5.0;750.00;750.00;FR40303265045\r\n'
         )
 
         # Export declaration as fallback
