@@ -27,6 +27,18 @@ class IntrastatUpdate(Wizard):
             ])
     update = StateTransition()
 
+    def _update_domain(self):
+        return [
+            ['OR',
+                ('shipment', 'ilike', 'stock.shipment.in,%'),
+                ('shipment', 'ilike', 'stock.shipment.out,%'),
+                ('shipment', 'ilike', 'stock.shipment.in.return,%'),
+                ('shipment', 'ilike', 'stock.shipment.out.return,%')
+                ],
+            ('state', '=', 'done'),
+            ('company.intrastat', '=', True),
+            ]
+
     def transition_update(self):
         pool = Pool()
         Move = pool.get('stock.move')
@@ -34,18 +46,12 @@ class IntrastatUpdate(Wizard):
         start_date = self.start.period.start_date
         end_date = self.start.period.end_date
         company = Transaction().context.get('company')
-        moves = Move.search([
-                ['OR',
-                    ('shipment', 'ilike', 'stock.shipment.in,%'),
-                    ('shipment', 'ilike', 'stock.shipment.out,%'),
-                    ('shipment', 'ilike', 'stock.shipment.in.return,%'),
-                    ('shipment', 'ilike', 'stock.shipment.out.return,%')
-                    ],
-                ('state', '=', 'done'),
+        domain = self._update_domain()
+        domain.extend([
                 ('effective_date', '>=', start_date),
                 ('effective_date', '<=', end_date),
                 ('company', '=', company),
-                ('company.intrastat', '=', True),
                 ])
+        moves = Move.search(domain)
         Move.update_intrastat_declaration(moves)
         return 'end'
