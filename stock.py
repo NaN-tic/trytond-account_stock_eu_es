@@ -97,8 +97,8 @@ class Move(metaclass=PoolMeta):
             ndigits = self.__class__.intrastat_value.digits[1]
             with Transaction().set_context(
                     date=self.effective_date or self.planned_date):
-                unit_price = self.shipment_price_list.compute(None,
-                    self.product, None, 1, self.uom)
+                unit_price = self.shipment_price_list.compute(
+                    self.product, self.quantity, self.unit)
                 if unit_price is not None:
                     unit_price = round(unit_price * Decimal(
                             str(self.quantity)), ndigits)
@@ -268,12 +268,12 @@ class Move(metaclass=PoolMeta):
             value += amount
         return value
 
-    def _intrastat_quantity(self, uom):
+    def _intrastat_quantity(self, unit):
         pool = Pool()
         UoM = pool.get('product.uom')
         ModelData = pool.get('ir.model.data')
 
-        result = super()._intrastat_quantity(uom)
+        result = super()._intrastat_quantity(unit)
         if not result:
             m = UoM(ModelData.get_id('product', 'uom_meter'))
             if (self.product.width
