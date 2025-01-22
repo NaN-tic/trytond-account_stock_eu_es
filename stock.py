@@ -1,25 +1,131 @@
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 from decimal import Decimal
+
 from trytond.model import fields
 from trytond.pool import Pool, PoolMeta
+from trytond.pyson import Eval
 from trytond.transaction import Transaction
+#from trytond.modules.currency.fields import Monetary
 
 
 class Move(metaclass=PoolMeta):
     __name__ = 'stock.move'
 
     intrastat_cancelled = fields.Boolean("Intrastat Cancelled")
+    shipment_price_list = fields.Function(fields.Many2One('product.price_list',
+            "Price List"), 'get_shipment_price_list',
+        searcher='search_shipment_price_list')
 
     @staticmethod
     def default_intrastat_cancelled():
         return False
 
-    @fields.depends('company', '_parent_company.intrastat')
+    def get_shipment_price_list(self, name):
+        pool = Pool()
+        ShipmentInternal = pool.get('stock.shipment.internal')
+
+        if (self.shipment
+                and isinstance(self.shipment, ShipmentInternal)):
+            return self.shipment.price_list
+        return None
+
+    @classmethod
+    def search_shipment_price_list(cls, name, clause):
+        return [('shipment.price_list',) + tuple(clause[1:])
+            + ('stock.shipment.internal',)]
+
+    @property
+    @fields.depends('shipment', 'shipment_price_list')
+    def intrastat_to_country(self):
+        pool = Pool()
+        ShipmentInternal = pool.get('stock.shipment.internal')
+
+        # Control the internal consignment move. Need to appear in Intrastat
+        if (self.shipment and isinstance(self.shipment, ShipmentInternal)
+                and self.shipment_price_list
+                and hasattr(self.shipment, 'intrastat_to_country')):
+            return self.shipment.intrastat_to_country
+        return super().intrastat_to_country
+
+    @property
+    @fields.depends('shipment', 'shipment_price_list')
+    def intrastat_from_country(self):
+        pool = Pool()
+        ShipmentInternal = pool.get('stock.shipment.internal')
+
+        # Control the internal consignment move. Need to appear in Intrastat
+        if (self.shipment and isinstance(self.shipment, ShipmentInternal)
+                and self.shipment_price_list
+                and hasattr(self.shipment, 'intrastat_from_country')):
+            return self.shipment.intrastat_from_country
+        return super().intrastat_from_country
+
+    @fields.depends('shipment', 'shipment_price_list')
+    def _get_intrastat_to_country(self):
+        # ALERT source code from intrastat_to_country property
+        pool = Pool()
+        ShipmentInternal = pool.get('stock.shipment.internal')
+
+        if (self.shipment and isinstance(self.shipment, ShipmentInternal)
+                and self.shipment_price_list
+                and hasattr(self.shipment, 'intrastat_to_country')):
+            return self.shipment.intrastat_to_country
+        return super()._get_intrastat_to_country()
+
+    @fields.depends('company', '_parent_company.intrastat', 'shipment',
+        'shipment_price_list')
     def on_change_with_intrastat_type(self):
-        if self.company and self.company.intrastat:
-            return super().on_change_with_intrastat_type()
-        return
+        pool = Pool()
+        ShipmentInternal = pool.get('stock.shipment.internal')
+
+        if (not self.company or not self.company.intrastat or (
+                    self.shipment and isinstance(
+                        self.shipment, ShipmentInternal)
+                    and (not self.shipment_price_list
+                        or (self.shipment_price_list
+                            and self not in self.shipment.outgoing_moves)))):
+            return
+        return super().on_change_with_intrastat_type()
+
+    def _intrastat_value(self):
+        pool = Pool()
+        Move = pool.get('stock.move')
+        Currency = pool.get('currency.currency')
+
+        if self.shipment_price_list:
+            ndigits = self.__class__.intrastat_value.digits[1]
+            with Transaction().set_context(
+                    date=self.effective_date or self.planned_date):
+                unit_price = self.shipment_price_list.compute(None,
+                    self.product, None, 1, self.uom)
+                if unit_price is not None:
+                    unit_price = round(unit_price * Decimal(
+                            str(self.quantity)), ndigits)
+                return unit_price
+
+        ndigits = Move.intrastat_value.digits[1]
+        default_intrastat_value = round(self.product.cost_price, ndigits)
+        intrastat_value_from_invoice = Decimal('0.0')
+        invoices = [l.invoice for l in self.invoice_lines
+            if l.invoice and l.invoice.state in ('posted', 'paid')]
+        # TODO: Control correctly UoM
+        quantity = sum(l.quantity for l in self.invoice_lines if l.quantity > 0)
+        intrastat_value = (super()._intrastat_value()
+            if self.currency else Decimal('0.0'))
+        if invoices and quantity == self.quantity:
+            intrastat_value_from_invoice = Move._intrastat_value_from_invoices(
+                self, invoices, intrastat_value)
+            with Transaction().set_context(
+                    date=self.effective_date or self.planned_date):
+                intrastat_value_from_invoice = round(Currency.compute(
+                        self.currency,
+                        intrastat_value_from_invoice,
+                        self.company.intrastat_currency,
+                        round=False), ndigits)
+
+        return (intrastat_value_from_invoice or intrastat_value
+            or default_intrastat_value)
 
     @classmethod
     def _update_intrastat(cls, moves):
@@ -28,12 +134,21 @@ class Move(metaclass=PoolMeta):
 
     def _set_intrastat(self):
         pool = Pool()
-        SaleLine = pool.get('sale.line')
-        PurchaseLine = pool.get('purchase.line')
+        try:
+            SaleLine = pool.get('sale.line')
+        except:
+            SaleLine = None
+        try:
+            PurchaseLine = pool.get('purchase.line')
+        except:
+            PurchaseLine = None
         ShipmentIn = pool.get('stock.shipment.in')
         ShipmentInReturn = pool.get('stock.shipment.in.return')
         ShipmentOut = pool.get('stock.shipment.out')
         ShipmentOutReturn = pool.get('stock.shipment.out.return')
+        Transport = pool.get('account.stock.eu.intrastat.transport')
+        ShipmentInternal = pool.get('stock.shipment.internal')
+        Incoterm = pool.get('incoterm.incoterm')
 
         super()._set_intrastat()
 
@@ -69,9 +184,9 @@ class Move(metaclass=PoolMeta):
         if not self.intrastat_incoterm:
             # Try to set Incoterm from origin
             if self.origin:
-                if isinstance(self.origin, SaleLine):
+                if SaleLine and isinstance(self.origin, SaleLine):
                     self.intrastat_incoterm = self.origin.sale.incoterm or None
-                elif isinstance(self.origin, PurchaseLine):
+                elif PurchaseLine and isinstance(self.origin, PurchaseLine):
                     self.intrastat_incoterm = (self.origin.purchase.incoterm
                         or None)
         if not self.intrastat_incoterm:
@@ -85,38 +200,43 @@ class Move(metaclass=PoolMeta):
             if party_incoterms and len(party_incoterms) == 1:
                 self.intrastat_incoterm = party_incoterms[0].incoterm
 
+        # If the move came from an Internal move, the subdivision maybe is
+        # not set.
+        if (not self.intrastat_subdivision and self.intrastat_type
+                and self.intrastat_type == 'dispatch' and self.shipment
+                and isinstance(self.shipment, ShipmentInternal)
+                and self.shipment_price_list
+                and self.shipment.from_location
+                and self.shipment.from_location.warehouse):
+            from_warehouse = self.shipment.from_location.warehouse
+            if (from_warehouse.address
+                    and from_warehouse.address.subdivision):
+                subdivision = from_warehouse.address.subdivision
+                self.intrastat_subdivision = subdivision.get_intrastat()
+
+        # If for some reason the intrastat_transport is not setted, we asume
+        # it's Road transport, code 3.
+        if not self.intrastat_transport and self.intrastat_type:
+            transports = Transport.search([
+                    ('code', '=', '3')
+                ], limit=1)
+            transport = transports[0] if transports else None
+            self.intrastat_transport = transport
+
+        # For Internal shipments with price_list, set a default Incoterm
+        if (not self.intrastat_incoterm and self.intrastat_type
+                and isinstance(self.shipment, ShipmentInternal)
+                and self.shipment_price_list):
+            incoterms = Incoterm.search([
+                    ('code', '=', 'EXW')
+                ], order=[('id', 'DESC')], limit=1)
+            incoterm = incoterms[0] if incoterms else None
+            self.intrastat_incoterm = incoterm
+
     def _intrastat_tariff_code_pattern_wo_country(self):
         return {
             'date': self.effective_date,
             }
-
-    def _intrastat_value(self):
-        pool = Pool()
-        Move = pool.get('stock.move')
-        Currency = pool.get('currency.currency')
-
-        ndigits = Move.intrastat_value.digits[1]
-        default_intrastat_value = round(self.product.cost_price, ndigits)
-        intrastat_value_from_invoice = Decimal('0.0')
-        invoices = [l.invoice for l in self.invoice_lines
-            if l.invoice and l.invoice.state in ('posted', 'paid')]
-        # TODO: Control correctly UoM
-        quantity = sum(l.quantity for l in self.invoice_lines if l.quantity > 0)
-        intrastat_value = (super()._intrastat_value()
-            if self.currency else Decimal('0.0'))
-        if invoices and quantity == self.quantity:
-            intrastat_value_from_invoice = Move._intrastat_value_from_invoices(
-                self, invoices, intrastat_value)
-            with Transaction().set_context(
-                    date=self.effective_date or self.planned_date):
-                intrastat_value_from_invoice = round(Currency.compute(
-                        self.currency,
-                        intrastat_value_from_invoice,
-                        self.company.intrastat_currency,
-                        round=False), ndigits)
-
-        return (intrastat_value_from_invoice or intrastat_value
-            or default_intrastat_value)
 
     @classmethod
     def _intrastat_value_from_invoices(cls, move, invoices, intrastat_value):
@@ -169,6 +289,18 @@ class Move(metaclass=PoolMeta):
                     m, round=False)
                 return width_meter * internal_quantity_meter
         return result
+
+    def _intrastat_counterparty(self):
+        pool = Pool()
+        ShipmentInternal = pool.get('stock.shipment.internal')
+
+        if (isinstance(self.shipment, ShipmentInternal)
+                and self.shipment_price_list and self.shipment.to_location
+                and self.shipment.to_location.warehouse
+                and self.shipment.to_location.warehouse.address):
+            return self.shipment.to_location.warehouse.address.party
+
+        return super()._intrastat_counterparty()
 
     @classmethod
     def update_intrastat_declaration(cls, moves):
@@ -249,6 +381,44 @@ class ShipmentOut(ShipmentMixin, metaclass=PoolMeta):
 
 class ShipmentInternal(ShipmentMixin, metaclass=PoolMeta):
     __name__ = 'stock.shipment.internal'
+
+    to_warehouse = fields.Function(
+        fields.Many2One(
+            'stock.location', "To Warehouse",
+            help="Where the stock is sent to."),
+        'on_change_with_to_warehouse')
+    price_list = fields.Many2One(
+        'product.price_list', "Price List",
+        help="The price list used to calculate the Intrastata value it's "
+            "required.",
+        domain=[
+            ('company', '=', Eval('company')),
+            ],
+        states={
+            'invisible': (~Eval('intrastat_from_country')
+                | ~Eval('intrastat_to_country')
+                | (Eval('intrastat_from_country') ==
+                    Eval('intrastat_to_country'))),
+            'readonly': ~Eval('state').in_(['request', 'draft']),
+            },)
+    currency = fields.Function(fields.Many2One('currency.currency',
+        'Currency'), 'on_change_with_currency')
+
+    @fields.depends('to_location')
+    def on_change_with_to_warehouse(self, name=None):
+        return self.to_location.warehouse if self.to_location else None
+
+    @fields.depends('company')
+    def on_change_with_currency(self, name=None):
+        currency_id = None
+        if hasattr(self, 'valued_moves') and self.valued_moves:
+            for move in self.valued_moves:
+                if move.currency:
+                    currency_id = move.currency.id
+                    break
+        if currency_id is None and self.company:
+            currency_id = self.company.currency.id
+        return currency_id
 
 
 class ShipmentInReturn(ShipmentMixin, metaclass=PoolMeta):

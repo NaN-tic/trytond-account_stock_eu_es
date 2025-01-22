@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
         today = dt.date.today()
 
         # Activate modules
-        config = activate_modules('account_stock_eu')
+        config = activate_modules('account_stock_eu_es')
         Country = Model.get('country.country')
         IntrastatDeclaration = Model.get(
             'account.stock.eu.intrastat.declaration')
@@ -73,6 +73,7 @@ class Test(unittest.TestCase):
         # Create company in Belgium
         _ = create_company(currency=eur)
         company = get_company()
+        self.assertEqual(company.intrastat, True)
         company_address, = company.party.addresses
         company_address.country = belgium
         company_address.subdivision = liege
@@ -267,6 +268,6 @@ class Test(unittest.TestCase):
                         [declaration])
         self.assertEqual(
             export.form.file,
-            b'arrival,FR,2,9403 10 51,60.0,1800.00,11,20.0,,\r\narrival,FR,2,9403 10 51,15.0,750.00,21,5.0,,\r\n'
+            b'arrival,FR,2,9403 10 51,60.0,1800.00,11,20.0,,,3,\r\narrival,FR,2,9403 10 51,15.0,750.00,21,5.0,,,3,\r\n'
         )
         self.assertEqual(export.form.filename.endswith('.csv'), True)
