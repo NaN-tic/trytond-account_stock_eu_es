@@ -255,11 +255,10 @@ class Test(unittest.TestCase):
         move.to_location = shipment.to_location
         move.product = product
         move.quantity = 10
-        move.currency = eur
         shipment.click('wait')
         shipment.click('assign_force')
         shipment.click('ship')
-        shipment.click('done')
+        shipment.click('do')
         self.assertEqual(shipment.state, 'done')
         move, = shipment.incoming_moves
         move.intrastat_type
@@ -302,7 +301,7 @@ class Test(unittest.TestCase):
         self.assertEqual(export.form.filename.endswith('.csv'), True)
         self.assertEqual(
             export.form.file,
-            b'29;FR;11;2;9403 10 51;60.0;20.0;1800.00;;;CN;FR40303265045\r\n29;FR;21;2;9403 10 51;15.0;5.0;750.00;;;CN;FR40303265045\r\n29;FR;31;2;9403 10 51;30.0;10.0;1000.00;;;CN;FR40303265045\r\n'
+            b'29;FR;11;2;9403 10 51;60.0;20.0;1800.00;CN;FR40303265045\r\n29;FR;21;2;9403 10 51;15.0;5.0;750.00;CN;FR40303265045\r\n29;FR;31;2;9403 10 51;30.0;10.0;1000.00;CN;FR40303265045\r\n'
         )
         self.assertEqual(declaration.state, 'closed')
 
@@ -318,8 +317,7 @@ class Test(unittest.TestCase):
         a = zip.open('dispatch-0.csv').read()
         self.assertEqual(
             zip.open('dispatch-0.csv').read(),
-            #b'FR;2;;12;;;9403 10 51;CN;;60.000;20.0;1800.00;1800.00;\r\nFR;2;;21;;;9403 10 51;CN;;15.000;5.0;750.00;750.00;FR40303265045\r\n'
-            b'FR;2;;11;;;9403 10 51;CN;;60.000;20.0;1800.00;1800.00;FR40303265045\r\nFR;2;;21;;;9403 10 51;CN;;15.000;5.0;750.00;750.00;FR40303265045\r\nFR;2;;31;;;9403 10 51;CN;;30.000;10.0;1000.00;1000.00;FR40303265045\r\n'
+            b'FR;2;;11;;;9403 10 51;CN;;60.0;20.0;1800.00;1800.00;FR40303265045\r\nFR;2;;21;;;9403 10 51;CN;;15.0;5.0;750.00;750.00;FR40303265045\r\nFR;2;;31;;;9403 10 51;CN;;30.0;10.0;1000.00;1000.00;FR40303265045\r\n'
         )
 
         # Export declaration as fallback
@@ -331,5 +329,5 @@ class Test(unittest.TestCase):
         self.assertEqual(export.form.filename.endswith('.csv'), True)
         self.assertEqual(
             export.form.file,
-            b'dispatch,FR,2,9403 10 51,60.0,1800.00,11,20.0,CN,FR40303265045,3,\r\ndispatch,FR,2,9403 10 51,15.0,750.00,21,5.0,CN,FR40303265045,3,\r\ndispatch,FR,2,9403 10 51,30.0,1000.00,31,10.0,CN,FR40303265045,3,EXW\r\n'
+            b'dispatch,FR,2,9403 10 51,60.0,1800.00,11,20.0,CN,FR40303265045\r\ndispatch,FR,2,9403 10 51,15.0,750.00,21,5.0,CN,FR40303265045\r\ndispatch,FR,2,9403 10 51,30.0,1000.00,31,10.0,CN,FR40303265045\r\n'
         )
