@@ -27,7 +27,7 @@ class Test(unittest.TestCase):
         today = dt.date.today()
 
         # Activate modules
-        config = activate_modules('account_stock_eu')
+        config = activate_modules('account_stock_eu_es')
         Country = Model.get('country.country')
         IntrastatDeclaration = Model.get(
             'account.stock.eu.intrastat.declaration')
@@ -39,8 +39,10 @@ class Test(unittest.TestCase):
         ProductUom = Model.get('product.uom')
         ShipmentOut = Model.get('stock.shipment.out')
         ShipmentInReturn = Model.get('stock.shipment.in.return')
+        ShipmentInternal = Model.get('stock.shipment.internal')
         StockLocation = Model.get('stock.location')
         TariffCode = Model.get('customs.tariff.code')
+        PriceList = Model.get('product.price_list')
 
         # Create countries
         europe, = Organization.find([('code', '=', 'EU')])
@@ -75,6 +77,7 @@ class Test(unittest.TestCase):
         # Create company in Belgium
         _ = create_company(currency=eur)
         company = get_company()
+        self.assertEqual(company.intrastat, True)
         company_address, = company.party.addresses
         company_address.country = belgium
         company_address.subdivision = liege
@@ -92,9 +95,12 @@ class Test(unittest.TestCase):
         identifier.code = "FR40303265045"
         supplier_fr.save()
         customer_fr = Party(name="Customer FR")
-        address, = customer_fr.addresses
-        address.country = france
+        identifier = customer_fr.identifiers.new(type='eu_vat')
+        identifier.code = "FR40303265045"
+        address_fr, = customer_fr.addresses
+        address_fr.country = france
         customer_fr.save()
+        address_fr.save()
         customer_us = Party(name="Customer US")
         address, = customer_us.addresses
         address.country = united_state
@@ -167,7 +173,7 @@ class Test(unittest.TestCase):
         self.assertEqual(move.intrastat_subdivision.intrastat_code, '2')
         self.assertEqual(move.intrastat_tariff_code.code, '9403 10 51')
         self.assertEqual(move.intrastat_value, Decimal('1800.00'))
-        self.assertEqual(move.intrastat_transaction.code, '12')
+        self.assertEqual(move.intrastat_transaction.code, '11')
         self.assertEqual(move.intrastat_additional_unit, 20.0)
         self.assertEqual(move.intrastat_country_of_origin.code, 'CN')
         move.intrastat_vat
@@ -221,6 +227,55 @@ class Test(unittest.TestCase):
         self.assertEqual(move.intrastat_vat.code, 'FR40303265045')
         self.assertEqual(move.intrastat_declaration.month, today.replace(day=1))
 
+        # Create consignment stock locations
+        warehouse_consignment_id, = StockLocation.copy([warehouse_loc],
+            config.context)
+        warehouse_consignment = StockLocation(warehouse_consignment_id)
+        warehouse_consignment.name = 'Consignment'
+        warehouse_consignment.address = address_fr
+        warehouse_consignment.save()
+
+        # Create a price List
+        price_list = PriceList(name='Retail')
+        price_list_line = price_list.lines.new()
+        price_list_line.quantity = 1
+        price_list_line.product = product
+        price_list_line.formula = '100.00'
+        price_list_line = price_list.lines.new()
+        price_list_line.formula = 'cost_price'
+        price_list.save()
+
+        # Move product from consignment location setting the price list
+        shipment = ShipmentInternal()
+        shipment.from_location = warehouse_loc.storage_location
+        shipment.to_location = warehouse_consignment.storage_location
+        shipment.price_list = price_list
+        move = shipment.moves.new()
+        move.from_location = shipment.from_location
+        move.to_location = shipment.to_location
+        move.product = product
+        move.quantity = 10
+        move.currency = eur
+        shipment.click('wait')
+        shipment.click('assign_force')
+        shipment.click('ship')
+        shipment.click('done')
+        self.assertEqual(shipment.state, 'done')
+        move, = shipment.incoming_moves
+        move.intrastat_type
+        move, = shipment.outgoing_moves
+        self.assertEqual(move.intrastat_type, 'dispatch')
+        self.assertEqual(move.intrastat_warehouse_country.code, 'BE')
+        self.assertEqual(move.intrastat_country.code, 'FR')
+        self.assertEqual(move.intrastat_subdivision.intrastat_code, '2')
+        self.assertEqual(move.intrastat_tariff_code.code, '9403 10 51')
+        self.assertEqual(move.intrastat_value, Decimal('1000.00'))
+        self.assertEqual(move.intrastat_transaction.code, '31')
+        self.assertEqual(move.intrastat_additional_unit, 10.0)
+        self.assertEqual(move.intrastat_country_of_origin.code, 'CN')
+        self.assertEqual(move.intrastat_vat.code, 'FR40303265045')
+        self.assertEqual(move.intrastat_declaration.month, today.replace(day=1))
+
         # Check declaration
         declaration, = IntrastatDeclaration.find([])
         self.assertEqual(declaration.country.code, 'BE')
@@ -228,17 +283,17 @@ class Test(unittest.TestCase):
         self.assertEqual(declaration.state, 'opened')
         with config.set_context(declaration=declaration.id):
 
-            _, declaration_line = IntrastatDeclarationLine.find([])
+            declaration_line = IntrastatDeclarationLine.find([])[0]
         self.assertEqual(declaration_line.type, 'dispatch')
         self.assertEqual(declaration_line.country.code, 'FR')
         self.assertEqual(declaration_line.subdivision.intrastat_code, '2')
         self.assertEqual(declaration_line.tariff_code.code, '9403 10 51')
-        self.assertEqual(declaration_line.weight, 15.0)
-        self.assertEqual(declaration_line.value, Decimal('750.00'))
-        self.assertEqual(declaration_line.transaction.code, '21')
-        self.assertEqual(declaration_line.additional_unit, 5.0)
+        self.assertEqual(declaration_line.weight, 60.0)
+        self.assertEqual(declaration_line.value, Decimal('1800.00'))
+        self.assertEqual(declaration_line.transaction.code, '11')
+        self.assertEqual(declaration_line.additional_unit, 20.0)
         self.assertEqual(declaration_line.country_of_origin.code, 'CN')
-        self.assertEqual(declaration_line.vat.code, 'FR40303265045')
+        self.assertEqual(move.intrastat_vat.code, 'FR40303265045')
 
         # Export declaration
         _ = declaration.click('export')
@@ -247,7 +302,7 @@ class Test(unittest.TestCase):
         self.assertEqual(export.form.filename.endswith('.csv'), True)
         self.assertEqual(
             export.form.file,
-            b'29;FR;12;2;9403 10 51;60.0;20.0;1800.00;CN;\r\n29;FR;21;2;9403 10 51;15.0;5.0;750.00;CN;FR40303265045\r\n'
+            b'29;FR;11;2;9403 10 51;60.0;20.0;1800.00;;;CN;FR40303265045\r\n29;FR;21;2;9403 10 51;15.0;5.0;750.00;;;CN;FR40303265045\r\n29;FR;31;2;9403 10 51;30.0;10.0;1000.00;;;CN;FR40303265045\r\n'
         )
         self.assertEqual(declaration.state, 'closed')
 
@@ -260,9 +315,11 @@ class Test(unittest.TestCase):
         self.assertEqual(export.form.filename.endswith('.zip'), True)
         zip = zipfile.ZipFile(io.BytesIO(export.form.file))
         self.assertEqual(zip.namelist(), ['dispatch-0.csv'])
+        a = zip.open('dispatch-0.csv').read()
         self.assertEqual(
             zip.open('dispatch-0.csv').read(),
-            b'FR;2;;12;;;9403 10 51;CN;;60.000;20.0;1800.00;1800.00;\r\nFR;2;;21;;;9403 10 51;CN;;15.000;5.0;750.00;750.00;FR40303265045\r\n'
+            #b'FR;2;;12;;;9403 10 51;CN;;60.000;20.0;1800.00;1800.00;\r\nFR;2;;21;;;9403 10 51;CN;;15.000;5.0;750.00;750.00;FR40303265045\r\n'
+            b'FR;2;;11;;;9403 10 51;CN;;60.000;20.0;1800.00;1800.00;FR40303265045\r\nFR;2;;21;;;9403 10 51;CN;;15.000;5.0;750.00;750.00;FR40303265045\r\nFR;2;;31;;;9403 10 51;CN;;30.000;10.0;1000.00;1000.00;FR40303265045\r\n'
         )
 
         # Export declaration as fallback
@@ -274,5 +331,5 @@ class Test(unittest.TestCase):
         self.assertEqual(export.form.filename.endswith('.csv'), True)
         self.assertEqual(
             export.form.file,
-            b'dispatch,FR,2,9403 10 51,60.0,1800.00,12,20.0,CN,\r\ndispatch,FR,2,9403 10 51,15.0,750.00,21,5.0,CN,FR40303265045\r\n'
+            b'dispatch,FR,2,9403 10 51,60.0,1800.00,11,20.0,CN,FR40303265045,3,\r\ndispatch,FR,2,9403 10 51,15.0,750.00,21,5.0,CN,FR40303265045,3,\r\ndispatch,FR,2,9403 10 51,30.0,1000.00,31,10.0,CN,FR40303265045,3,EXW\r\n'
         )
