@@ -255,7 +255,6 @@ class Test(unittest.TestCase):
         move.to_location = shipment.to_location
         move.product = product
         move.quantity = 10
-        move.currency = eur
         shipment.click('wait')
         shipment.click('assign_force')
         shipment.click('ship')
@@ -318,8 +317,7 @@ class Test(unittest.TestCase):
         a = zip.open('dispatch-0.csv').read()
         self.assertEqual(
             zip.open('dispatch-0.csv').read(),
-            #b'FR;2;;12;;;9403 10 51;CN;;60.000;20.0;1800.00;1800.00;\r\nFR;2;;21;;;9403 10 51;CN;;15.000;5.0;750.00;750.00;FR40303265045\r\n'
-            b'FR;2;;11;;;9403 10 51;CN;;60.000;20.0;1800.00;1800.00;FR40303265045\r\nFR;2;;21;;;9403 10 51;CN;;15.000;5.0;750.00;750.00;FR40303265045\r\nFR;2;;31;;;9403 10 51;CN;;30.000;10.0;1000.00;1000.00;FR40303265045\r\n'
+            b'FR;2;;11;;;9403 10 51;CN;;60.0;20.0;1800.00;1800.00;FR40303265045\r\nFR;2;;21;;;9403 10 51;CN;;15.0;5.0;750.00;750.00;FR40303265045\r\nFR;2;;31;;;9403 10 51;CN;;30.0;10.0;1000.00;1000.00;FR40303265045\r\n'
         )
 
         # Export declaration as fallback
