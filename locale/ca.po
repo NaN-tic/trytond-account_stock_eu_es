@@ -1,0 +1,133 @@
+#
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "field:account.configuration,intrastat_discount_product:"
+msgid "Intrastat Discount Product"
+msgstr "Descompte Producte Intrastat"
+
+msgctxt "field:account.configuration.intrastat,company:"
+msgid "Company"
+msgstr "Companyia"
+
+msgctxt "field:account.configuration.intrastat,intrastat_discount_product:"
+msgid "Intrastat Discout Product"
+msgstr "Descompte Producte Intrastat"
+
+msgctxt "field:account.stock.eu.intrastat.update.start,period:"
+msgid "Period"
+msgstr "Període"
+
+msgctxt "field:company.company,intrastat:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "field:stock.move,intrastat_cancelled:"
+msgid "Intrastat Cancelled"
+msgstr "Intrastat cancel·lat"
+
+msgctxt "field:stock.move,shipment_price_list:"
+msgid "Price List"
+msgstr "Llista de preus"
+
+msgctxt "field:stock.shipment.in,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Transport Intrastat"
+
+msgctxt "field:stock.shipment.in,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Valor total d'Intrastat"
+
+msgctxt "field:stock.shipment.in.return,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Transport Intrastat"
+
+msgctxt "field:stock.shipment.in.return,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Valor total d'Intrastat"
+
+msgctxt "field:stock.shipment.internal,currency:"
+msgid "Currency"
+msgstr "Moneda"
+
+msgctxt "field:stock.shipment.internal,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Transport Intrastat"
+
+msgctxt "field:stock.shipment.internal,price_list:"
+msgid "Price List"
+msgstr "Llista de preus"
+
+msgctxt "field:stock.shipment.internal,to_warehouse:"
+msgid "To Warehouse"
+msgstr "Al Magatzem"
+
+msgctxt "field:stock.shipment.internal,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Valor total d'Intrastat"
+
+msgctxt "field:stock.shipment.out,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Transport Intrastat"
+
+msgctxt "field:stock.shipment.out,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Valor total d'Intrastat"
+
+msgctxt "field:stock.shipment.out.return,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Transport Intrastat"
+
+msgctxt "field:stock.shipment.out.return,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Valor total d'Intrastat"
+
+msgctxt "help:account.configuration,intrastat_discount_product:"
+msgid ""
+"If setted, when calcaulate the amount of the Intrastata move it take the "
+"discount line if exit from the same invoice."
+msgstr ""
+"Si s'estableix, quan es calcula l'import de l'Intrastata es pren la"
+" línia de descompte si surt de la mateixa factura."
+
+msgctxt "help:stock.shipment.internal,price_list:"
+msgid "The price list used to calculate the Intrastata value it's required."
+msgstr ""
+"La llista de preus utilitzada per calcular el valor d'Intrastata és "
+"requerida."
+
+msgctxt "help:stock.shipment.internal,to_warehouse:"
+msgid "Where the stock is sent to."
+msgstr "On s'envia l'estoc."
+
+msgctxt "model:account.configuration.intrastat,name:"
+msgid "Account Configuration Intrastat"
+msgstr "Configuració del compte Intrastat"
+
+msgctxt "model:account.stock.eu.intrastat.update.start,name:"
+msgid "Intrastat Update Start"
+msgstr "Inici de l'actualització d'Intrastat"
+
+msgctxt "model:ir.action,name:act_intrastat_update_wizard"
+msgid "Update Intrastat"
+msgstr "Actualitzar Intrastat"
+
+msgctxt "model:ir.ui.menu,name:menu_intrastat_update"
+msgid "Update Intrastat"
+msgstr "Actualitzar Intrastat"
+
+msgctxt "view:account.configuration:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "view:stock.shipment.internal:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "wizard_button:account.stock.eu.intrastat.update,start,end:"
+msgid "Cancel"
+msgstr "Cancel·la"
+
+msgctxt "wizard_button:account.stock.eu.intrastat.update,start,update:"
+msgid "Update"
+msgstr "Actualització"
