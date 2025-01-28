@@ -256,7 +256,7 @@ class Test(unittest.TestCase):
         self.assertEqual(zip.namelist(), ['arrival-0.csv'])
         self.assertEqual(
             zip.open('arrival-0.csv').read(),
-            b'FR;2;;11;;;9403 10 51;;;60.0;20.0;1800.00;1800.00;\r\nFR;2;;21;;;9403 10 51;;;15.0;5.0;750.00;750.00;\r\n'
+            b'FR;2;;11;;;9403 10 51;;;60.000;20.0;1800.00;1800.00;\r\nFR;2;;21;;;9403 10 51;;;15.000;5.0;750.00;750.00;\r\n'
         )
 
         # Export declaration as fallback
