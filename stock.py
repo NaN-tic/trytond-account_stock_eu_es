@@ -355,6 +355,17 @@ class ShipmentMixin:
     intrastat_transport = fields.Many2One(
         'account.stock.eu.intrastat.transport', "Intrastat Transport",
         ondelete='RESTRICT')
+    total_intrastat_value = fields.Function(fields.Numeric(
+            "Total Intrastat Value", digits=(16, 2), readonly=True),
+        'get_total_intrastat_value')
+
+    def get_total_intrastat_value(self, name):
+        total = Decimal(0)
+        for move in self.moves:
+            if not move.intrastat_type:
+                continue
+            total += move.intrastat_value
+        return total
 
 
 class ShipmentIn(ShipmentMixin, metaclass=PoolMeta):
