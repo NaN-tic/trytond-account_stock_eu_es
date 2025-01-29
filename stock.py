@@ -362,7 +362,7 @@ class ShipmentMixin:
     def get_total_intrastat_value(self, name):
         total = Decimal(0)
         for move in self.moves:
-            if not move.intrastat_type:
+            if not move.intrastat_type or not move.intrastat_value:
                 continue
             total += move.intrastat_value
         return total
