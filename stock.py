@@ -337,8 +337,9 @@ class Move(metaclass=PoolMeta):
         # intrastat_to_country are setted. If not, rasie a warning that in
         # the case that the company has intrastat not activated, it's not
         # necessary.
-        company = Transaction().context.get('company')
-        skip = False if company and Company(company).intrastat else True
+        company_id = Transaction().context.get('company')
+        skip = (False if company_id is not None and company_id >= 0
+            and Company(company_id).intrastat else True)
         with Transaction().set_context(_skip_warnings=skip):
             super().do(moves)
 
