@@ -323,8 +323,7 @@ class Move(metaclass=PoolMeta):
                 move.intrastat_type = move.on_change_with_intrastat_type()
                 move._set_intrastat()
                 if not move.internal_weight:
-                    internal_weight = cls._get_internal_weight(
-                        move.quantity, move.unit, move.product)
+                    internal_weight = move.on_change_with_internal_weight()
                     move.internal_weight = internal_weight or 0
             cls.save(moves)
 
