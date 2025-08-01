@@ -86,6 +86,16 @@ class Move(metaclass=PoolMeta):
                         or (self.shipment_price_list
                             and self not in self.shipment.outgoing_moves)))):
             return
+        # If the movement is "from" and "to" different Company country, then
+        # it has not to be included in the Intrastat. Only the movements that
+        # come "from" or "to" Company country must to be included.
+        from_country = self.intrastat_from_country
+        to_country = self.intrastat_to_country
+        company_country = self.comapany.address_get(type='invoice')
+        if from_country and to_country and company_country:
+            if (from_country != company_country
+                    and to_country != company_country):
+                return
         return super().on_change_with_intrastat_type()
 
     def _intrastat_value(self):
