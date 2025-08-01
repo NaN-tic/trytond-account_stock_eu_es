@@ -91,7 +91,8 @@ class Move(metaclass=PoolMeta):
         # come "from" or "to" Company country must to be included.
         from_country = self.intrastat_from_country
         to_country = self.intrastat_to_country
-        company_country = self.company.party.address_get(type='invoice')
+        company_address = self.company.party.address_get(type='invoice')
+        company_country = company_address.country if company_address else None
         if from_country and to_country and company_country:
             if (from_country != company_country
                     and to_country != company_country):
