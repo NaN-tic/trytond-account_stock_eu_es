@@ -9,6 +9,8 @@ from . import (account, account_stock_eu, country, invoice, purchase, sale,
 def register():
     Pool.register(
         country.Country,
+        stock.Configuration,
+        stock.StockConfigurationAccountTax,
         stock.Move,
         stock.ShipmentIn,
         stock.ShipmentOut,
