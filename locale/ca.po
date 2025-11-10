@@ -22,6 +22,18 @@ msgctxt "field:company.company,intrastat:"
 msgid "Intrastat"
 msgstr "Intrastat"
 
+msgctxt "field:stock.configuration,intrastat_exempt_taxes:"
+msgid "Intrastat Exempt Taxes"
+msgstr "Impostos exempts d'Intrastat"
+
+msgctxt "field:stock.configuration-account.tax,configuration:"
+msgid "Stock Configuration"
+msgstr "Configuració d'estoc"
+
+msgctxt "field:stock.configuration-account.tax,tax:"
+msgid "Tax"
+msgstr "Impostos"
+
 msgctxt "field:stock.move,intrastat_cancelled:"
 msgid "Intrastat Cancelled"
 msgstr "Intrastat cancel·lat"
@@ -87,8 +99,8 @@ msgid ""
 "If setted, when calcaulate the amount of the Intrastata move it take the "
 "discount line if exit from the same invoice."
 msgstr ""
-"Si s'estableix, quan es calcula l'import de l'Intrastata es pren la"
-" línia de descompte si surt de la mateixa factura."
+"Si s'estableix, quan es calcula l'import de l'Intrastata es pren la línia de"
+" descompte si surt de la mateixa factura."
 
 msgctxt "help:stock.shipment.internal,price_list:"
 msgid "The price list used to calculate the Intrastata value it's required."
@@ -116,7 +128,15 @@ msgctxt "model:ir.ui.menu,name:menu_intrastat_update"
 msgid "Update Intrastat"
 msgstr "Actualitzar Intrastat"
 
+msgctxt "model:stock.configuration-account.tax,name:"
+msgid "Stock Configuration - Account Tax"
+msgstr "Configuració d'estoc - Impostos"
+
 msgctxt "view:account.configuration:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "view:stock.configuration:"
 msgid "Intrastat"
 msgstr "Intrastat"
 
