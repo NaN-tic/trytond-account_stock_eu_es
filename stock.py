@@ -117,6 +117,11 @@ class Move(metaclass=PoolMeta):
             if (from_country != company_country
                     and to_country != company_country):
                 return
+
+        # If the sale/invoice relate to the move have National Tax, the move
+        # has not to be in the Intrastat
+        if self.move_tax_intrastat_exempt():
+            return
         return super().on_change_with_intrastat_type()
 
     def _intrastat_value(self):
@@ -161,9 +166,7 @@ class Move(metaclass=PoolMeta):
     @classmethod
     def _update_intrastat(cls, moves):
         if not Transaction().context.get('_update_intrastat_declaration'):
-            intrastat_moves = [m for m in moves
-                               if not m.move_tax_intrastat_exempt()]
-            super()._update_intrastat(intrastat_moves)
+            super()._update_intrastat(moves)
 
     def _set_intrastat(self):
         pool = Pool()
@@ -182,10 +185,6 @@ class Move(metaclass=PoolMeta):
         Transport = pool.get('account.stock.eu.intrastat.transport')
         ShipmentInternal = pool.get('stock.shipment.internal')
         Incoterm = pool.get('incoterm.incoterm')
-
-        if self.move_tax_intrastat_exempt():
-            self.intrastat_type = None
-            return
 
         super()._set_intrastat()
 
@@ -370,11 +369,19 @@ class Move(metaclass=PoolMeta):
     def move_tax_intrastat_exempt(self):
         pool = Pool()
         Configuration = pool.get('stock.configuration')
+
         config = Configuration(1)
-        if not config.intrastat_exempt_taxes or not self.invoice_lines:
+        if not config.intrastat_exempt_taxes:
             return False
         for line in self.invoice_lines:
             for tax in line.taxes:
+                if tax in config.intrastat_exempt_taxes:
+                    return True
+        if hasattr(self, 'sale'):
+            SaleLine = pool.get('sale.line')
+            sale_line_taxes = (self.origin.taxes
+                if isinstance(self.origin, SaleLine) else [])
+            for tax in sale_line_taxes:
                 if tax in config.intrastat_exempt_taxes:
                     return True
         return False

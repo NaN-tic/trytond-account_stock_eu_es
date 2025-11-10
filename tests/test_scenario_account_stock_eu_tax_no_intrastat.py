@@ -1,7 +1,5 @@
 import datetime as dt
-import io
 import unittest
-import zipfile
 from decimal import Decimal
 
 from proteus import Model, Wizard
@@ -30,7 +28,7 @@ class Test(unittest.TestCase):
         today = dt.date.today()
 
         # Activate modules
-        config = activate_modules(['account_stock_eu_es', 'sale'])
+        activate_modules(['account_stock_eu_es', 'sale'])
         Country = Model.get('country.country')
         Incoterm = Model.get('incoterm.incoterm')
         Organization = Model.get('country.organization')
@@ -209,7 +207,7 @@ class Test(unittest.TestCase):
         self.assertEqual(move.intrastat_country, None)
         self.assertEqual(move.intrastat_subdivision, None)
         self.assertEqual(move.intrastat_tariff_code, None)
-        self.assertEqual(move.intrastat_value, None)
+        self.assertEqual(move.intrastat_value, Decimal('400.00'))
         self.assertEqual(move.intrastat_transaction, None)
         self.assertEqual(move.intrastat_additional_unit, None)
         self.assertEqual(move.intrastat_country_of_origin, None)
@@ -241,7 +239,7 @@ class Test(unittest.TestCase):
         self.assertEqual(move.intrastat_country, None)
         self.assertEqual(move.intrastat_subdivision, None)
         self.assertEqual(move.intrastat_tariff_code, None)
-        self.assertEqual(move.intrastat_value, None)
+        self.assertEqual(move.intrastat_value, Decimal('400.00'))
         self.assertEqual(move.intrastat_transaction, None)
         self.assertEqual(move.intrastat_additional_unit, None)
         self.assertEqual(move.intrastat_country_of_origin, None)
