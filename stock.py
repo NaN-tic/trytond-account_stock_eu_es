@@ -345,14 +345,15 @@ class Move(metaclass=PoolMeta):
         ShipmentOutReturn = pool.get('stock.shipment.out.return')
 
         with Transaction().set_context(_update_intrastat_declaration=True):
+            moves_to_reset = []
             for move in moves:
                 if (move.invoice_lines
                         and any(line.invoice.state == 'cancelled'
                             for line in move.invoice_lines
                             if line.invoice is not None)):
-                    continue
+                    moves_to_reset.append(move)
                 elif move.move_tax_intrastat_exempt():
-                    continue
+                    moves_to_reset.append(move)
                 if move.shipment and isinstance(move.shipment, ShipmentIn):
                     move.shipment.on_change_supplier()
                 elif (move.shipment
@@ -364,7 +365,31 @@ class Move(metaclass=PoolMeta):
                     internal_weight = cls._get_internal_weight(
                         move.quantity, move.unit, move.product)
                     move.internal_weight = internal_weight or 0
+            if moves_to_reset:
+                cls.reset_intrastat(moves_to_reset)
             cls.save(moves)
+
+    @classmethod
+    def reset_intrastat(cls, moves):
+        values = {
+            'internal_volume': None,
+            'internal_weight': None,
+            'intrastat_additional_unit': None,
+            'intrastat_country': None,
+            'intrastat_country_of_origin': None,
+            'intrastat_declaration': None,
+            'intrastat_subdivision': None,
+            'intrastat_tariff_code': None,
+            'intrastat_transaction': None,
+            'intrastat_type': None,
+            'intrastat_value': None,
+            'intrastat_vat': None,
+            'intrastat_warehouse_country': None,
+            'intrastat_incoterm': None,
+            'intrastat_transport': None,
+            'intrastat_cancelled': None,
+            }
+        cls.write(moves, values)
 
     def move_tax_intrastat_exempt(self):
         pool = Pool()
