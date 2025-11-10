@@ -2,12 +2,32 @@
 # this repository contains the full copyright notices and license terms.
 from decimal import Decimal
 
-from trytond.model import fields
+from trytond.model import fields, ModelSQL
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
 from trytond.transaction import Transaction
 #from trytond.modules.currency.fields import Monetary
 
+class Configuration(metaclass=PoolMeta):
+    __name__ = 'stock.configuration'
+
+    intrastat_exempt_taxes = fields.Many2Many('stock.configuration-account.tax', 'configuration', 'tax',
+        "Intrastat Exempt Taxes")
+
+
+class StockConfigurationAccountTax(ModelSQL):
+    "Stock Configuration - Account Tax"
+    __name__ = 'stock.configuration-account.tax'
+
+    configuration = fields.Many2One(
+        'stock.configuration', "Stock Configuration", ondelete='CASCADE',
+        required=True)
+    tax = fields.Many2One(
+        'account.tax', "Tax", ondelete='CASCADE', required=True,
+        domain=[
+            ('parent', '=', None),
+            ],
+        )
 
 class Move(metaclass=PoolMeta):
     __name__ = 'stock.move'
@@ -97,6 +117,11 @@ class Move(metaclass=PoolMeta):
             if (from_country != company_country
                     and to_country != company_country):
                 return
+
+        # If the sale/invoice relate to the move have National Tax, the move
+        # has not to be in the Intrastat
+        if self.move_tax_intrastat_exempt():
+            return
         return super().on_change_with_intrastat_type()
 
     def _intrastat_value(self):
@@ -326,6 +351,8 @@ class Move(metaclass=PoolMeta):
                             for line in move.invoice_lines
                             if line.invoice is not None)):
                     continue
+                elif move.move_tax_intrastat_exempt():
+                    continue
                 if move.shipment and isinstance(move.shipment, ShipmentIn):
                     move.shipment.on_change_supplier()
                 elif (move.shipment
@@ -337,6 +364,26 @@ class Move(metaclass=PoolMeta):
                     internal_weight = move.on_change_with_internal_weight()
                     move.internal_weight = internal_weight or 0
             cls.save(moves)
+
+    def move_tax_intrastat_exempt(self):
+        pool = Pool()
+        Configuration = pool.get('stock.configuration')
+
+        config = Configuration(1)
+        if not config.intrastat_exempt_taxes:
+            return False
+        for line in self.invoice_lines:
+            for tax in line.taxes:
+                if tax in config.intrastat_exempt_taxes:
+                    return True
+        if hasattr(self, 'sale'):
+            SaleLine = pool.get('sale.line')
+            sale_line_taxes = (self.origin.taxes
+                if isinstance(self.origin, SaleLine) else [])
+            for tax in sale_line_taxes:
+                if tax in config.intrastat_exempt_taxes:
+                    return True
+        return False
 
     @classmethod
     def do(cls, moves):
