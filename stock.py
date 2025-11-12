@@ -94,7 +94,7 @@ class Move(metaclass=PoolMeta):
         return super()._get_intrastat_to_country()
 
     @fields.depends('company', '_parent_company.intrastat', 'shipment',
-        'shipment_price_list')
+        'shipment_price_list', 'invoice_lines')
     def on_change_with_intrastat_type(self):
         pool = Pool()
         ShipmentInternal = pool.get('stock.shipment.internal')
@@ -522,3 +522,11 @@ class ShipmentInReturn(ShipmentMixin, metaclass=PoolMeta):
 
 class ShipmentOutReturn(ShipmentMixin, metaclass=PoolMeta):
     __name__ = 'stock.shipment.out.return'
+
+
+class MoveSale(metaclass=PoolMeta):
+    __name__ = 'stock.move'
+
+    @fields.depends('sale')
+    def on_change_with_intrastat_type(self):
+        return super().on_change_with_intrastat_type()
