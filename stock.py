@@ -522,3 +522,11 @@ class ShipmentInReturn(ShipmentMixin, metaclass=PoolMeta):
 
 class ShipmentOutReturn(ShipmentMixin, metaclass=PoolMeta):
     __name__ = 'stock.shipment.out.return'
+
+
+class MoveSale(metaclass=PoolMeta):
+    __name__ = 'stock.move'
+
+    @fields.depends('sale')
+    def on_change_with_intrastat_type(self):
+        return super().on_change_with_intrastat_type()
