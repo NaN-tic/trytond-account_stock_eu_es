@@ -20,20 +20,18 @@ def register():
         account_stock_eu.IntrastatUpdateStart,
         account.FiscalYear,
         company.Company,
+        invoice.Configuration,
+        invoice.ConfigurationIntrastat,
+        invoice.Invoice,
         module='account_stock_eu_es', type_='model')
     Pool.register(
         account_stock_eu.IntrastatUpdate,
         module='account_stock_eu_es', type_='wizard')
-    Pool.register(
-        invoice.Configuration,
-        invoice.ConfigurationIntrastat,
-        invoice.Invoice,
-        module='account_stock_eu_es', type_='model',
-        depends=['account_invoice_stock'])
     Pool.register(
         purchase.PurchaseLine,
         module='account_stock_eu_es', type_='model', depends=['purchase'])
     Pool.register(
         sale.Sale,
         sale.SaleLine,
+        stock.MoveSale,
         module='account_stock_eu_es', type_='model', depends=['sale'])
