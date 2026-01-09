@@ -11,7 +11,8 @@ from trytond.transaction import Transaction
 class Configuration(metaclass=PoolMeta):
     __name__ = 'stock.configuration'
 
-    intrastat_exempt_taxes = fields.Many2Many('stock.configuration-account.tax', 'configuration', 'tax',
+    intrastat_exempt_taxes = fields.Many2Many(
+        'stock.configuration-account.tax', 'configuration', 'tax',
         "Intrastat Exempt Taxes")
 
 
