@@ -6,7 +6,7 @@ from trytond.model import fields, ModelSQL
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
 from trytond.transaction import Transaction
-#from trytond.modules.currency.fields import Monetary
+
 
 class Configuration(metaclass=PoolMeta):
     __name__ = 'stock.configuration'
@@ -129,6 +129,10 @@ class Move(metaclass=PoolMeta):
         pool = Pool()
         Move = pool.get('stock.move')
         Currency = pool.get('currency.currency')
+        try:
+            LandedCost = pool.get('account.landed_cost')
+        except:
+            LandedCost = None
 
         if self.shipment_price_list:
             ndigits = self.__class__.intrastat_value.digits[1]
@@ -148,8 +152,28 @@ class Move(metaclass=PoolMeta):
             if l.invoice and l.invoice.state in ('posted', 'paid')]
         # TODO: Control correctly UoM
         quantity = sum(l.quantity for l in self.invoice_lines if l.quantity > 0)
-        intrastat_value = (super()._intrastat_value()
-            if self.currency else Decimal('0.0'))
+        landed_costs = None
+        # If Landed cost is set on a shipment, the intrastat value must be
+        # calculated without this extra amount on unit_price.
+        if LandedCost:
+            landed_costs = LandedCost.search([
+                    ('shipments','in',[self.shipment.id]),
+            ])
+            if landed_costs and self.unit_price is not None and self.currency:
+                unit_price = self.unit_price - self.unit_landed_cost
+                ndigits = self.__class__.intrastat_value.digits[1]
+                with Transaction().set_context(
+                        date=self.effective_date or self.planned_date):
+                    intrastat_value = round(Currency.compute(
+                            self.currency,
+                            unit_price * Decimal(str(self.quantity)),
+                            self.company.intrastat_currency or self.currency,
+                            round=False), ndigits)
+            elif not self.currency:
+                intrastat_value = Decimal('0.0')
+        if not landed_costs:
+            intrastat_value = (super()._intrastat_value()
+                if self.currency else Decimal('0.0'))
         if invoices and quantity == self.quantity:
             intrastat_value_from_invoice = Move._intrastat_value_from_invoices(
                 self, invoices, intrastat_value)
