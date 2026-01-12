@@ -155,7 +155,7 @@ class Move(metaclass=PoolMeta):
         landed_costs = None
         # If Landed cost is set on a shipment, the intrastat value must be
         # calculated without this extra amount on unit_price.
-        if LandedCost:
+        if LandedCost and self.shipment:
             landed_costs = LandedCost.search([
                     ('shipments','in',[self.shipment.id]),
             ])
