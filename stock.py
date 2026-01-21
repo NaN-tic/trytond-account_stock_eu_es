@@ -160,7 +160,8 @@ class Move(metaclass=PoolMeta):
                     ('shipments','in',[self.shipment.id]),
             ])
             if landed_costs and self.unit_price is not None and self.currency:
-                unit_price = self.unit_price - self.unit_landed_cost
+                unit_price = self.unit_price - (
+                    self.unit_landed_cost or Decimal('0.0'))
                 ndigits = self.__class__.intrastat_value.digits[1]
                 with Transaction().set_context(
                         date=self.effective_date or self.planned_date):
