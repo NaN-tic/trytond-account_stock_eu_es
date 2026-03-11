@@ -372,13 +372,9 @@ class Move(metaclass=PoolMeta):
         with Transaction().set_context(_update_intrastat_declaration=True):
             moves_to_reset = []
             for move in moves:
-                if (move.invoice_lines
-                        and any(line.invoice.state == 'cancelled'
-                            for line in move.invoice_lines
-                            if line.invoice is not None)):
+                if move.intrastat_cancelled or move.move_tax_intrastat_exempt():
                     moves_to_reset.append(move)
-                elif move.move_tax_intrastat_exempt():
-                    moves_to_reset.append(move)
+                    continue
                 if move.shipment and isinstance(move.shipment, ShipmentIn):
                     move.shipment.on_change_supplier()
                 elif (move.shipment
@@ -411,7 +407,7 @@ class Move(metaclass=PoolMeta):
             'intrastat_warehouse_country': None,
             'intrastat_incoterm': None,
             'intrastat_transport': None,
-            'intrastat_cancelled': None,
+            'intrastat_cancelled': True,
             }
         cls.write(moves, values)
 

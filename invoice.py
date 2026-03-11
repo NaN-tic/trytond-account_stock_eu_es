@@ -102,12 +102,7 @@ class Invoice(metaclass=PoolMeta):
         lines = [l for i in invoices for l in i.lines]
         moves = [m for l in lines for m in l.stock_moves
             if m.intrastat_type is not None]
-        values = {
-            'intrastat_cancelled': True,
-            'intrastat_type': None,
-            'intrastat_declaration': None,
-            }
-        Move.write(moves, values)
+        Move.reset_intrastat(moves)
         moves = Move.browse(moves)
         Move.update_intrastat_declaration(moves)
 
