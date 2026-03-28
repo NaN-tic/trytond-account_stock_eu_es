@@ -507,7 +507,7 @@ class ShipmentInternal(ShipmentMixin, metaclass=PoolMeta):
         help="The price list used to calculate the Intrastata value it's "
             "required.",
         domain=[
-            ('company', '=', Eval('company')),
+            ('company', '=', Eval('company', -1)),
             ],
         states={
             'invisible': (~Eval('intrastat_from_country')
