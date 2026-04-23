@@ -1,12 +1,14 @@
 import datetime as dt
 import unittest
 from decimal import Decimal
+from unittest.mock import patch
 
 from proteus import Model, Wizard
 from trytond.modules.account.tests.tools import (create_chart, create_fiscalyear,
                                                  create_tax, get_accounts)
 from trytond.modules.company.tests.tools import create_company, get_company
 from trytond.modules.currency.tests.tools import get_currency
+from trytond.modules.stock.move import Move as StockMoveModel
 from trytond.tests.test_tryton import drop_db
 from trytond.tests.tools import activate_modules
 from trytond.modules.account_invoice.tests.tools import set_fiscalyear_invoice_sequences
@@ -23,6 +25,9 @@ class Test(unittest.TestCase):
         super().tearDown()
 
     def test(self):
+        _ = patch.object(
+            StockMoveModel, 'on_change_with_assignation_required',
+            return_value=False).start()
 
         # Imports
         today = dt.date.today()
@@ -194,6 +199,7 @@ class Test(unittest.TestCase):
         # Send sale shipment
         shipment, = sale.shipments
         shipment.click('wait')
+        shipment.click('assign_try')
         shipment.click('pick')
         shipment.click('pack')
         shipment.click('do')
