@@ -125,7 +125,12 @@ class Move(metaclass=PoolMeta):
             return
         return super().on_change_with_intrastat_type()
 
-    def _intrastat_value(self):
+    @fields.depends(
+        'state', 'unit_price', 'currency', 'quantity', 'effective_date',
+        'planned_date', 'company', '_parent_company.intrastat_currency',
+        'shipment_price_list', 'invoice_lines', 'shipment',
+        'product', '_parent_product.cost_price', 'unit')
+    def on_change_with_intrastat_value(self):
         pool = Pool()
         Move = pool.get('stock.move')
         Currency = pool.get('currency.currency')
@@ -146,7 +151,9 @@ class Move(metaclass=PoolMeta):
                 return unit_price
 
         ndigits = Move.intrastat_value.digits[1]
-        default_intrastat_value = round(self.product.cost_price, ndigits)
+        default_intrastat_value = None
+        if self.product and self.product.cost_price is not None:
+            default_intrastat_value = round(self.product.cost_price, ndigits)
         intrastat_value_from_invoice = Decimal('0.0')
         invoices = [l.invoice for l in self.invoice_lines
             if l.invoice and l.invoice.state in ('posted', 'paid')]
@@ -160,7 +167,9 @@ class Move(metaclass=PoolMeta):
                     ('shipments','in',[self.shipment.id]),
             ])
             if landed_costs and self.unit_price is not None and self.currency:
-                unit_price = self.unit_price - self.unit_landed_cost
+                unit_landed_cost = getattr(
+                    self, 'unit_landed_cost', Decimal('0.0'))
+                unit_price = self.unit_price - unit_landed_cost
                 ndigits = self.__class__.intrastat_value.digits[1]
                 with Transaction().set_context(
                         date=self.effective_date or self.planned_date):
@@ -172,7 +181,7 @@ class Move(metaclass=PoolMeta):
             elif not self.currency:
                 intrastat_value = Decimal('0.0')
         if not landed_costs:
-            intrastat_value = (super()._intrastat_value()
+            intrastat_value = (super().on_change_with_intrastat_value()
                 if self.currency else Decimal('0.0'))
         if invoices and quantity == self.quantity:
             intrastat_value_from_invoice = Move._intrastat_value_from_invoices(
