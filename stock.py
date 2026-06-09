@@ -5,7 +5,7 @@ from decimal import Decimal
 from trytond.model import fields, ModelSQL
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
-from trytond.transaction import Transaction
+from trytond.transaction import Transaction, without_check_access
 
 
 class Configuration(metaclass=PoolMeta):
@@ -159,13 +159,15 @@ class Move(metaclass=PoolMeta):
             if l.invoice and l.invoice.state in ('posted', 'paid')]
         # TODO: Control correctly UoM
         quantity = sum(l.quantity for l in self.invoice_lines if l.quantity > 0)
+
         landed_costs = None
         # If Landed cost is set on a shipment, the intrastat value must be
         # calculated without this extra amount on unit_price.
         if LandedCost and self.shipment:
-            landed_costs = LandedCost.search([
-                    ('shipments','in',[self.shipment.id]),
-            ])
+            with without_check_access():
+                landed_costs = LandedCost.search([
+                        ('shipments','in',[self.shipment.id]),
+                ], limit=1)
             if landed_costs and self.unit_price is not None and self.currency:
                 unit_landed_cost = getattr(
                     self, 'unit_landed_cost', Decimal('0.0'))
@@ -180,9 +182,11 @@ class Move(metaclass=PoolMeta):
                             round=False), ndigits)
             elif not self.currency:
                 intrastat_value = Decimal('0.0')
+
         if not landed_costs:
             intrastat_value = (super().on_change_with_intrastat_value()
                 if self.currency else Decimal('0.0'))
+
         if invoices and quantity == self.quantity:
             intrastat_value_from_invoice = Move._intrastat_value_from_invoices(
                 self, invoices, intrastat_value)
