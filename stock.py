@@ -389,6 +389,9 @@ class Move(metaclass=PoolMeta):
                         and isinstance(move.shipment, ShipmentOutReturn)):
                     move.shipment.on_change_customer()
                 move.intrastat_type = move.on_change_with_intrastat_type()
+                if not move.intrastat_type:
+                    moves_to_reset.append(move)
+                    continue
                 move._set_intrastat()
                 if not move.internal_weight:
                     internal_weight = move.on_change_with_internal_weight()
