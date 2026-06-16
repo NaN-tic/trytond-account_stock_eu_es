@@ -82,18 +82,6 @@ class Move(metaclass=PoolMeta):
             return self.shipment.intrastat_from_country
         return super().intrastat_from_country
 
-    @fields.depends('shipment', 'shipment_price_list')
-    def _get_intrastat_to_country(self):
-        # ALERT source code from intrastat_to_country property
-        pool = Pool()
-        ShipmentInternal = pool.get('stock.shipment.internal')
-
-        if (self.shipment and isinstance(self.shipment, ShipmentInternal)
-                and self.shipment_price_list
-                and hasattr(self.shipment, 'intrastat_to_country')):
-            return self.shipment.intrastat_to_country
-        return super()._get_intrastat_to_country()
-
     @fields.depends('company', '_parent_company.intrastat', 'shipment',
         'shipment_price_list', 'invoice_lines', 'origin')
     def on_change_with_intrastat_type(self):
