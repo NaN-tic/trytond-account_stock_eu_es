@@ -28,19 +28,28 @@ class IntrastatUpdate(Wizard):
     update = StateTransition()
 
     def _update_domain(self):
+        pool = Pool()
+        Move = pool.get('stock.move')
+
+        shipment_domain = [
+            'OR',
+            ('shipment', 'ilike', 'stock.shipment.in,%'),
+            ('shipment', 'ilike', 'stock.shipment.out,%'),
+            ('shipment', 'ilike', 'stock.shipment.in.return,%'),
+            ('shipment', 'ilike', 'stock.shipment.out.return,%'),
+            ]
+        if 'production_input' in Move._fields:
+            shipment_domain.append(('production_input', '!=', None))
+        if 'production_output' in Move._fields:
+            shipment_domain.append(('production_output', '!=', None))
+        shipment_domain.append([
+                'OR',
+                ('shipment', 'ilike', 'stock.shipment.internal,%'),
+                ('shipment_price_list', '!=', None),
+                ])
+
         return [
-            ['OR',
-                ('shipment', 'ilike', 'stock.shipment.in,%'),
-                ('shipment', 'ilike', 'stock.shipment.out,%'),
-                ('shipment', 'ilike', 'stock.shipment.in.return,%'),
-                ('shipment', 'ilike', 'stock.shipment.out.return,%'),
-                ('production_input', '!=', None),
-                ('production_output', '!=', None),
-                ['OR',
-                    ('shipment', 'ilike', 'stock.shipment.internal,%'),
-                    ('shipment_price_list', '!=', None),
-                    ],
-                ],
+            shipment_domain,
             ('state', '=', 'done'),
             ('company.intrastat', '=', True),
             ]

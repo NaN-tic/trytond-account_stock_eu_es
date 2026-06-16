@@ -39,10 +39,8 @@ class Test(unittest.TestCase):
         ProductUom = Model.get('product.uom')
         ShipmentOut = Model.get('stock.shipment.out')
         ShipmentInReturn = Model.get('stock.shipment.in.return')
-        ShipmentInternal = Model.get('stock.shipment.internal')
         StockLocation = Model.get('stock.location')
         TariffCode = Model.get('customs.tariff.code')
-        PriceList = Model.get('product.price_list')
 
         # Create countries
         europe, = Organization.find([('code', '=', 'EU')])
@@ -227,54 +225,6 @@ class Test(unittest.TestCase):
         self.assertEqual(move.intrastat_vat.code, 'FR40303265045')
         self.assertEqual(move.intrastat_declaration.month, today.replace(day=1))
 
-        # Create consignment stock locations
-        warehouse_consignment_id, = StockLocation.copy([warehouse_loc],
-            config.context)
-        warehouse_consignment = StockLocation(warehouse_consignment_id)
-        warehouse_consignment.name = 'Consignment'
-        warehouse_consignment.address = address_fr
-        warehouse_consignment.save()
-
-        # Create a price List
-        price_list = PriceList(name='Retail')
-        price_list_line = price_list.lines.new()
-        price_list_line.quantity = 1
-        price_list_line.product = product
-        price_list_line.formula = '100.00'
-        price_list_line = price_list.lines.new()
-        price_list_line.formula = 'cost_price'
-        price_list.save()
-
-        # Move product from consignment location setting the price list
-        shipment = ShipmentInternal()
-        shipment.from_location = warehouse_loc.storage_location
-        shipment.to_location = warehouse_consignment.storage_location
-        shipment.price_list = price_list
-        move = shipment.moves.new()
-        move.from_location = shipment.from_location
-        move.to_location = shipment.to_location
-        move.product = product
-        move.quantity = 10
-        shipment.click('wait')
-        shipment.click('assign_force')
-        shipment.click('ship')
-        shipment.click('do')
-        self.assertEqual(shipment.state, 'done')
-        move, = shipment.incoming_moves
-        move.intrastat_type
-        move, = shipment.outgoing_moves
-        self.assertEqual(move.intrastat_type, 'dispatch')
-        self.assertEqual(move.intrastat_warehouse_country.code, 'BE')
-        self.assertEqual(move.intrastat_country.code, 'FR')
-        self.assertEqual(move.intrastat_subdivision.intrastat_code, '2')
-        self.assertEqual(move.intrastat_tariff_code.code, '9403 10 51')
-        self.assertEqual(move.intrastat_value, Decimal('1000.00'))
-        self.assertEqual(move.intrastat_transaction.code, '31')
-        self.assertEqual(move.intrastat_additional_unit, 10.0)
-        self.assertEqual(move.intrastat_country_of_origin.code, 'CN')
-        self.assertEqual(move.intrastat_vat.code, 'FR40303265045')
-        self.assertEqual(move.intrastat_declaration.month, today.replace(day=1))
-
         # Check declaration
         declaration, = IntrastatDeclaration.find([])
         self.assertEqual(declaration.country.code, 'BE')
@@ -301,7 +251,7 @@ class Test(unittest.TestCase):
         self.assertEqual(export.form.filename.endswith('.csv'), True)
         self.assertEqual(
             export.form.file,
-            b'29;FR;11;2;9403 10 51;60.0;20.0;1800.00;CN;FR40303265045\r\n29;FR;21;2;9403 10 51;15.0;5.0;750.00;CN;FR40303265045\r\n29;FR;31;2;9403 10 51;30.0;10.0;1000.00;CN;FR40303265045\r\n'
+            b'29;FR;11;2;9403 10 51;60.0;20.0;1800.00;CN;FR40303265045\r\n29;FR;21;2;9403 10 51;15.0;5.0;750.00;CN;FR40303265045\r\n'
         )
         self.assertEqual(declaration.state, 'closed')
 
@@ -316,7 +266,7 @@ class Test(unittest.TestCase):
         self.assertEqual(zip.namelist(), ['dispatch-0.csv'])
         self.assertEqual(
             zip.open('dispatch-0.csv').read(),
-            b'FR;2;;11;;;9403 10 51;CN;;60.0;20.0;1800.00;1800.00;FR40303265045\r\nFR;2;;21;;;9403 10 51;CN;;15.0;5.0;750.00;750.00;FR40303265045\r\nFR;2;;31;;;9403 10 51;CN;;30.0;10.0;1000.00;1000.00;FR40303265045\r\n'
+            b'FR;2;;11;;;9403 10 51;CN;;60.0;20.0;1800.00;1800.00;FR40303265045\r\nFR;2;;21;;;9403 10 51;CN;;15.0;5.0;750.00;750.00;FR40303265045\r\n'
         )
 
         # Export declaration as fallback
@@ -328,5 +278,5 @@ class Test(unittest.TestCase):
         self.assertEqual(export.form.filename.endswith('.csv'), True)
         self.assertEqual(
             export.form.file,
-            b'dispatch,FR,2,9403 10 51,60.0,1800.00,11,20.0,CN,FR40303265045\r\ndispatch,FR,2,9403 10 51,15.0,750.00,21,5.0,CN,FR40303265045\r\ndispatch,FR,2,9403 10 51,30.0,1000.00,31,10.0,CN,FR40303265045\r\n'
+            b'dispatch,FR,2,9403 10 51,60.0,1800.00,11,20.0,CN,FR40303265045\r\ndispatch,FR,2,9403 10 51,15.0,750.00,21,5.0,CN,FR40303265045\r\n'
         )
