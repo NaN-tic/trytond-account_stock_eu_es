@@ -362,8 +362,13 @@ class Move(metaclass=PoolMeta):
     @classmethod
     def update_intrastat_declaration(cls, moves):
         pool = Pool()
+        IntrastatDeclaration = pool.get(
+            'account.stock.eu.intrastat.declaration')
         ShipmentIn = pool.get('stock.shipment.in')
         ShipmentOutReturn = pool.get('stock.shipment.out.return')
+        declarations = {
+            move.intrastat_declaration for move in moves
+            if move.intrastat_declaration}
 
         with Transaction().set_context(_update_intrastat_declaration=True):
             moves_to_reset = []
@@ -387,6 +392,16 @@ class Move(metaclass=PoolMeta):
             if moves_to_reset:
                 cls.reset_intrastat(moves_to_reset)
             cls.save(moves)
+        if declarations:
+            remaining_moves = cls.search([
+                    ('intrastat_declaration', 'in', list(declarations)),
+                    ])
+            remaining_declarations = {
+                move.intrastat_declaration for move in remaining_moves
+                if move.intrastat_declaration}
+            orphan_declarations = list(declarations - remaining_declarations)
+            if orphan_declarations:
+                IntrastatDeclaration.delete(orphan_declarations)
 
     @classmethod
     def reset_intrastat(cls, moves):
