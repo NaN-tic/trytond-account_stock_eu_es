@@ -201,11 +201,6 @@ class Move(metaclass=PoolMeta):
         return (intrastat_value_from_invoice or intrastat_value
             or default_intrastat_value)
 
-    @classmethod
-    def _update_intrastat(cls, moves):
-        if not Transaction().context.get('_update_intrastat_declaration'):
-            super()._update_intrastat(moves)
-
     def _set_intrastat(self):
         pool = Pool()
         try:
