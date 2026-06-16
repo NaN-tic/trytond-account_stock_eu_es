@@ -34,6 +34,8 @@ class IntrastatUpdate(Wizard):
                 ('shipment', 'ilike', 'stock.shipment.out,%'),
                 ('shipment', 'ilike', 'stock.shipment.in.return,%'),
                 ('shipment', 'ilike', 'stock.shipment.out.return,%'),
+                ('production_input', '!=', None),
+                ('production_output', '!=', None),
                 ['OR',
                     ('shipment', 'ilike', 'stock.shipment.internal,%'),
                     ('shipment_price_list', '!=', None),
