@@ -149,6 +149,7 @@ class Move(metaclass=PoolMeta):
         quantity = sum(l.quantity for l in self.invoice_lines if l.quantity > 0)
 
         landed_costs = None
+        intrastat_value = Decimal('0.0')
         # If Landed cost is set on a shipment, the intrastat value must be
         # calculated without this extra amount on unit_price.
         if LandedCost and self.shipment:
@@ -168,8 +169,6 @@ class Move(metaclass=PoolMeta):
                             unit_price * Decimal(str(self.quantity)),
                             self.company.intrastat_currency or self.currency,
                             round=False), ndigits)
-            elif not self.currency:
-                intrastat_value = Decimal('0.0')
 
         if not landed_costs:
             intrastat_value = (super().on_change_with_intrastat_value()
