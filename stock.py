@@ -400,7 +400,8 @@ class Move(metaclass=PoolMeta):
                 if move.intrastat_declaration}
             orphan_declarations = list(declarations - remaining_declarations)
             if orphan_declarations:
-                IntrastatDeclaration.delete(orphan_declarations)
+                with without_check_access():
+                    IntrastatDeclaration.delete(orphan_declarations)
 
     @classmethod
     def reset_intrastat(cls, moves):
