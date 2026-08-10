@@ -36,6 +36,8 @@ class Test(unittest.TestCase):
         activate_modules(['account_stock_eu_es', 'sale'])
         Country = Model.get('country.country')
         Incoterm = Model.get('incoterm.incoterm')
+        IntrastatDeclaration = Model.get(
+            'account.stock.eu.intrastat.declaration')
         Organization = Model.get('country.organization')
         Party = Model.get('party.party')
         Period = Model.get('account.period')
@@ -261,3 +263,14 @@ class Test(unittest.TestCase):
         self.assertEqual(intrastat_move.intrastat_transaction.code, '11')
         self.assertEqual(intrastat_move.intrastat_additional_unit, 5.0)
         self.assertEqual(intrastat_move.intrastat_country_of_origin.code, 'CN')
+
+        # Cancel the invoice and ensure its declaration is not left orphaned.
+        invoice, = sale.invoices
+        company.cancel_invoice_out = True
+        company.save()
+        invoice.click('post')
+        invoice.click('cancel')
+        intrastat_move.reload()
+        self.assertEqual(intrastat_move.intrastat_type, None)
+        self.assertEqual(intrastat_move.intrastat_declaration, None)
+        self.assertEqual(IntrastatDeclaration.find([]), [])
