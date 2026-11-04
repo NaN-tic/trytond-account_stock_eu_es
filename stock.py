@@ -159,7 +159,7 @@ class Move(metaclass=PoolMeta):
                 ], limit=1)
             if landed_costs and self.unit_price is not None and self.currency:
                 unit_landed_cost = getattr(
-                    self, 'unit_landed_cost', Decimal('0.0'))
+                    self, 'unit_landed_cost', None) or Decimal('0.0')
                 unit_price = self.unit_price - unit_landed_cost
                 ndigits = self.__class__.intrastat_value.digits[1]
                 with Transaction().set_context(
