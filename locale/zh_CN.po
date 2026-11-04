@@ -1,0 +1,162 @@
+#
+msgid ""
+msgstr ""
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgctxt "field:account.configuration,intrastat_discount_product:"
+msgid "Intrastat Discount Product"
+msgstr "Intrastat 折扣产品"
+
+msgctxt "field:account.configuration.intrastat,company:"
+msgid "Company"
+msgstr "公司"
+
+msgctxt "field:account.configuration.intrastat,intrastat_discount_product:"
+msgid "Intrastat Discout Product"
+msgstr "Intrastat 折扣产品"
+
+msgctxt "field:account.stock.eu.intrastat.update.start,period:"
+msgid "Period"
+msgstr "分期"
+
+msgctxt "field:company.company,intrastat:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "field:stock.configuration,intrastat_exempt_taxes:"
+msgid "Intrastat Exempt Taxes"
+msgstr "Intrastat 免税税项"
+
+msgctxt "field:stock.configuration-account.tax,configuration:"
+msgid "Stock Configuration"
+msgstr "库存配置"
+
+msgctxt "field:stock.configuration-account.tax,tax:"
+msgid "Tax"
+msgstr "税"
+
+msgctxt "field:stock.move,intrastat_cancelled:"
+msgid "Intrastat Cancelled"
+msgstr "Intrastat 已取消"
+
+msgctxt "field:stock.move,shipment_price_list:"
+msgid "Price List"
+msgstr "价目表"
+
+msgctxt "field:stock.shipment.in,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Intrastat 运输方式"
+
+msgctxt "field:stock.shipment.in,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Intrastat 总价值"
+
+msgctxt "field:stock.shipment.in.return,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Intrastat 运输方式"
+
+msgctxt "field:stock.shipment.in.return,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Intrastat 总价值"
+
+msgctxt "field:stock.shipment.internal,currency:"
+msgid "Currency"
+msgstr "货币"
+
+msgctxt "field:stock.shipment.internal,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Intrastat 运输方式"
+
+msgctxt "field:stock.shipment.internal,price_list:"
+msgid "Price List"
+msgstr "价目表"
+
+msgctxt "field:stock.shipment.internal,to_warehouse:"
+msgid "To Warehouse"
+msgstr "目标仓库"
+
+msgctxt "field:stock.shipment.internal,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Intrastat 总价值"
+
+msgctxt "field:stock.shipment.out,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Intrastat 运输方式"
+
+msgctxt "field:stock.shipment.out,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Intrastat 总价值"
+
+msgctxt "field:stock.shipment.out.return,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Intrastat 运输方式"
+
+msgctxt "field:stock.shipment.out.return,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Intrastat 总价值"
+
+msgctxt "help:account.configuration,intrastat_discount_product:"
+msgid ""
+"If setted, when calcaulate the amount of the Intrastata move it take the "
+"discount line if exit from the same invoice."
+msgstr "设置后，计算 Intrastat 库存移动金额时，会计入同一发票上的折扣明细（如有）。"
+
+msgctxt "help:stock.shipment.internal,price_list:"
+msgid "The price list used to calculate the Intrastata value it's required."
+msgstr "必须设置用于计算 Intrastat 价值的价目表。"
+
+msgctxt "help:stock.shipment.internal,to_warehouse:"
+msgid "Where the stock is sent to."
+msgstr "货物送到的地方."
+
+msgctxt "model:account.configuration.intrastat,name:"
+msgid "Account Configuration Intrastat"
+msgstr "Intrastat 会计配置"
+
+msgctxt "model:account.stock.eu.intrastat.update.start,name:"
+msgid "Intrastat Update Start"
+msgstr "更新 Intrastat：开始"
+
+msgctxt "model:ir.action,name:act_intrastat_update_wizard"
+msgid "Update Intrastat"
+msgstr "更新 Intrastat"
+
+msgctxt "model:ir.ui.menu,name:menu_intrastat_update"
+msgid "Update Intrastat"
+msgstr "更新 Intrastat"
+
+msgctxt "model:stock.configuration-account.tax,name:"
+msgid "Stock Configuration - Account Tax"
+msgstr "库存配置 - 会计税项"
+
+msgctxt "view:account.configuration:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "view:stock.configuration:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "view:stock.shipment.internal:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "wizard_button:account.stock.eu.intrastat.update,start,end:"
+msgid "Cancel"
+msgstr "取消"
+
+msgctxt "wizard_button:account.stock.eu.intrastat.update,start,update:"
+msgid "Update"
+msgstr "更新"
+
+msgctxt "model:account.configuration.intrastat,string:"
+msgid "Account Configuration Intrastat"
+msgstr "Intrastat 会计配置"
+
+msgctxt "model:stock.configuration-account.tax,string:"
+msgid "Stock Configuration - Account Tax"
+msgstr "库存配置 - 会计税项"
