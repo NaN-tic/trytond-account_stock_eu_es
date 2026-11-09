@@ -1,0 +1,164 @@
+#
+msgid ""
+msgstr ""
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "field:account.configuration,intrastat_discount_product:"
+msgid "Intrastat Discount Product"
+msgstr "Intrastat-kedvezménytermék"
+
+msgctxt "field:account.configuration.intrastat,company:"
+msgid "Company"
+msgstr "Cég"
+
+msgctxt "field:account.configuration.intrastat,intrastat_discount_product:"
+msgid "Intrastat Discout Product"
+msgstr "Intrastat-kedvezménytermék"
+
+msgctxt "field:account.stock.eu.intrastat.update.start,period:"
+msgid "Period"
+msgstr "Periódus"
+
+msgctxt "field:company.company,intrastat:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "field:stock.configuration,intrastat_exempt_taxes:"
+msgid "Intrastat Exempt Taxes"
+msgstr "Intrastat adómentes adói"
+
+msgctxt "field:stock.configuration-account.tax,configuration:"
+msgid "Stock Configuration"
+msgstr "Készletbeállítások"
+
+msgctxt "field:stock.configuration-account.tax,tax:"
+msgid "Tax"
+msgstr "Adó"
+
+msgctxt "field:stock.move,intrastat_cancelled:"
+msgid "Intrastat Cancelled"
+msgstr "Intrastat visszavonva"
+
+msgctxt "field:stock.move,shipment_price_list:"
+msgid "Price List"
+msgstr "Árlista"
+
+msgctxt "field:stock.shipment.in,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Intrastat fuvarozási mód"
+
+msgctxt "field:stock.shipment.in,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Intrastat-érték összesen"
+
+msgctxt "field:stock.shipment.in.return,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Intrastat fuvarozási mód"
+
+msgctxt "field:stock.shipment.in.return,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Intrastat-érték összesen"
+
+msgctxt "field:stock.shipment.internal,currency:"
+msgid "Currency"
+msgstr "Pénznem"
+
+msgctxt "field:stock.shipment.internal,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Intrastat fuvarozási mód"
+
+msgctxt "field:stock.shipment.internal,price_list:"
+msgid "Price List"
+msgstr "Árlista"
+
+msgctxt "field:stock.shipment.internal,to_warehouse:"
+msgid "To Warehouse"
+msgstr "Célraktár"
+
+msgctxt "field:stock.shipment.internal,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Intrastat-érték összesen"
+
+msgctxt "field:stock.shipment.out,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Intrastat fuvarozási mód"
+
+msgctxt "field:stock.shipment.out,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Intrastat-érték összesen"
+
+msgctxt "field:stock.shipment.out.return,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "Intrastat fuvarozási mód"
+
+msgctxt "field:stock.shipment.out.return,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "Intrastat-érték összesen"
+
+msgctxt "help:account.configuration,intrastat_discount_product:"
+msgid ""
+"If setted, when calcaulate the amount of the Intrastata move it take the "
+"discount line if exit from the same invoice."
+msgstr ""
+"Beállítása esetén az Intrastat-készletmozgás összegének számításakor az "
+"ugyanazon számlán szereplő kedvezménysort is figyelembe veszi, ha van ilyen."
+
+msgctxt "help:stock.shipment.internal,price_list:"
+msgid "The price list used to calculate the Intrastata value it's required."
+msgstr "Az Intrastat-érték kiszámításához használt árlista megadása kötelező."
+
+msgctxt "help:stock.shipment.internal,to_warehouse:"
+msgid "Where the stock is sent to."
+msgstr "Erre a címre megy az áru."
+
+msgctxt "model:account.configuration.intrastat,name:"
+msgid "Account Configuration Intrastat"
+msgstr "Intrastat könyvelési beállításai"
+
+msgctxt "model:account.stock.eu.intrastat.update.start,name:"
+msgid "Intrastat Update Start"
+msgstr "Intrastat frissítése – kezdés"
+
+msgctxt "model:ir.action,name:act_intrastat_update_wizard"
+msgid "Update Intrastat"
+msgstr "Intrastat frissítése"
+
+msgctxt "model:ir.ui.menu,name:menu_intrastat_update"
+msgid "Update Intrastat"
+msgstr "Intrastat frissítése"
+
+msgctxt "model:stock.configuration-account.tax,name:"
+msgid "Stock Configuration - Account Tax"
+msgstr "Készletbeállítások – adó"
+
+msgctxt "view:account.configuration:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "view:stock.configuration:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "view:stock.shipment.internal:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "wizard_button:account.stock.eu.intrastat.update,start,end:"
+msgid "Cancel"
+msgstr "Mégse"
+
+msgctxt "wizard_button:account.stock.eu.intrastat.update,start,update:"
+msgid "Update"
+msgstr "Frissítés"
+
+msgctxt "model:account.configuration.intrastat,string:"
+msgid "Account Configuration Intrastat"
+msgstr "Intrastat könyvelési beállításai"
+
+msgctxt "model:stock.configuration-account.tax,string:"
+msgid "Stock Configuration - Account Tax"
+msgstr "Készletbeállítások – adó"
