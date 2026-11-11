@@ -20,4 +20,14 @@ this repository contains the full copyright notices and license terms. -->
             <field name="name">intrastat_update_start_form</field>
         </record>
     </data>
+    <data>
+        <record model="ir.action-res.group" id="intrastat_update_group_account">
+            <field name="action" ref="act_intrastat_update_wizard"/>
+            <field name="group" ref="account.group_account"/>
+        </record>
+        <record model="ir.action-res.group" id="intrastat_update_group_account_admin">
+            <field name="action" ref="act_intrastat_update_wizard"/>
+            <field name="group" ref="account.group_account_admin"/>
+        </record>
+    </data>
 </tryton>
