@@ -1,0 +1,164 @@
+#
+msgid ""
+msgstr ""
+"Language: km\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+msgctxt "field:account.configuration,intrastat_discount_product:"
+msgid "Intrastat Discount Product"
+msgstr "ផលិតផលសម្រាប់ការបញ្ចុះតម្លៃ Intrastat"
+
+msgctxt "field:account.configuration.intrastat,company:"
+msgid "Company"
+msgstr "ក្រុមហ៊ុន"
+
+msgctxt "field:account.configuration.intrastat,intrastat_discount_product:"
+msgid "Intrastat Discout Product"
+msgstr "ផលិតផលសម្រាប់ការបញ្ចុះតម្លៃ Intrastat"
+
+msgctxt "field:account.stock.eu.intrastat.update.start,period:"
+msgid "Period"
+msgstr "គ្រា"
+
+msgctxt "field:company.company,intrastat:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "field:stock.configuration,intrastat_exempt_taxes:"
+msgid "Intrastat Exempt Taxes"
+msgstr "ពន្ធលើកលែងសម្រាប់ Intrastat"
+
+msgctxt "field:stock.configuration-account.tax,configuration:"
+msgid "Stock Configuration"
+msgstr "ការកំណត់រចនាសម្ព័ន្ធស្តុក"
+
+msgctxt "field:stock.configuration-account.tax,tax:"
+msgid "Tax"
+msgstr "ពន្ធ"
+
+msgctxt "field:stock.move,intrastat_cancelled:"
+msgid "Intrastat Cancelled"
+msgstr "បានបោះបង់ Intrastat"
+
+msgctxt "field:stock.move,shipment_price_list:"
+msgid "Price List"
+msgstr "តារាងតម្លៃ"
+
+msgctxt "field:stock.shipment.in,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "ការដឹកជញ្ជូន Intrastat"
+
+msgctxt "field:stock.shipment.in,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "តម្លៃ Intrastat សរុប"
+
+msgctxt "field:stock.shipment.in.return,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "ការដឹកជញ្ជូន Intrastat"
+
+msgctxt "field:stock.shipment.in.return,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "តម្លៃ Intrastat សរុប"
+
+msgctxt "field:stock.shipment.internal,currency:"
+msgid "Currency"
+msgstr "រូបិយប័ណ្ណ"
+
+msgctxt "field:stock.shipment.internal,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "ការដឹកជញ្ជូន Intrastat"
+
+msgctxt "field:stock.shipment.internal,price_list:"
+msgid "Price List"
+msgstr "តារាងតម្លៃ"
+
+msgctxt "field:stock.shipment.internal,to_warehouse:"
+msgid "To Warehouse"
+msgstr "ទៅឃ្លាំង"
+
+msgctxt "field:stock.shipment.internal,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "តម្លៃ Intrastat សរុប"
+
+msgctxt "field:stock.shipment.out,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "ការដឹកជញ្ជូន Intrastat"
+
+msgctxt "field:stock.shipment.out,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "តម្លៃ Intrastat សរុប"
+
+msgctxt "field:stock.shipment.out.return,intrastat_transport:"
+msgid "Intrastat Transport"
+msgstr "ការដឹកជញ្ជូន Intrastat"
+
+msgctxt "field:stock.shipment.out.return,total_intrastat_value:"
+msgid "Total Intrastat Value"
+msgstr "តម្លៃ Intrastat សរុប"
+
+msgctxt "help:account.configuration,intrastat_discount_product:"
+msgid ""
+"If setted, when calcaulate the amount of the Intrastata move it take the "
+"discount line if exit from the same invoice."
+msgstr ""
+"បើកំណត់ ប្រព័ន្ធនឹងប្រើបន្ទាត់បញ្ចុះតម្លៃពីវិក្កយបត្រដូចគ្នា បើមាន "
+"នៅពេលគណនាចំនួនទឹកប្រាក់នៃចលនា Intrastat។"
+
+msgctxt "help:stock.shipment.internal,price_list:"
+msgid "The price list used to calculate the Intrastata value it's required."
+msgstr "ត្រូវកំណត់តារាងតម្លៃសម្រាប់គណនាតម្លៃ Intrastat។"
+
+msgctxt "help:stock.shipment.internal,to_warehouse:"
+msgid "Where the stock is sent to."
+msgstr "កន្លែងដែលត្រូវផ្ញើស្តុកទៅ។"
+
+msgctxt "model:account.configuration.intrastat,name:"
+msgid "Account Configuration Intrastat"
+msgstr "ការកំណត់គណនេយ្យ Intrastat"
+
+msgctxt "model:account.stock.eu.intrastat.update.start,name:"
+msgid "Intrastat Update Start"
+msgstr "ចាប់ផ្ដើមធ្វើបច្ចុប្បន្នភាព Intrastat"
+
+msgctxt "model:ir.action,name:act_intrastat_update_wizard"
+msgid "Update Intrastat"
+msgstr "ធ្វើបច្ចុប្បន្នភាព Intrastat"
+
+msgctxt "model:ir.ui.menu,name:menu_intrastat_update"
+msgid "Update Intrastat"
+msgstr "ធ្វើបច្ចុប្បន្នភាព Intrastat"
+
+msgctxt "model:stock.configuration-account.tax,name:"
+msgid "Stock Configuration - Account Tax"
+msgstr "ការកំណត់ស្តុក - ពន្ធគណនេយ្យ"
+
+msgctxt "view:account.configuration:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "view:stock.configuration:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "view:stock.shipment.internal:"
+msgid "Intrastat"
+msgstr "Intrastat"
+
+msgctxt "wizard_button:account.stock.eu.intrastat.update,start,end:"
+msgid "Cancel"
+msgstr "បោះបង់"
+
+msgctxt "wizard_button:account.stock.eu.intrastat.update,start,update:"
+msgid "Update"
+msgstr "ធ្វើបច្ចុប្បន្នភាព"
+
+msgctxt "model:account.configuration.intrastat,string:"
+msgid "Account Configuration Intrastat"
+msgstr "ការកំណត់គណនេយ្យ Intrastat"
+
+msgctxt "model:stock.configuration-account.tax,string:"
+msgid "Stock Configuration - Account Tax"
+msgstr "ការកំណត់ស្តុក - ពន្ធគណនេយ្យ"
